@@ -1,7 +1,7 @@
 #  Sharing options at the bottom of the post.
 #  Icons from <https://fontawesome.com/>
 
-platforms:
+# platforms:
 #   -
 #     type: Twitter
 #     icon: "fab fa-twitter"
