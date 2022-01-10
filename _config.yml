@@ -23,7 +23,7 @@ title: flameking 的个人博客                          # the main title
 tagline: Life is flawed,but we still love life    # it will display as the sub-title
 
 description: >-                        # used by seo meta and the atom feed
-  记录学习笔记，分享 Computer Science 相关知识
+  
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
 url: 'https://Casflawed.github.io'
@@ -31,8 +31,8 @@ url: 'https://Casflawed.github.io'
 github:
   username: Casflawed             # change to your github username
 
-# twitter:
-#   username: twitter_username            # change to your twitter username
+twitter:
+  username: twitter_username            # change to your twitter username
 
 social:
   # Change to your full name.
@@ -41,7 +41,7 @@ social:
   email: 2711554770@qq.com             # change to your email address
   links:
     # The first element serves as the copyright owner's link
-    # - https://twitter.com/username      # change to your twitter homepage
+    - https://twitter.com/username      # change to your twitter homepage
     - https://github.com/Casflawed       # change to your github homepage
     # Uncomment below to add more social links
     # - https://www.facebook.com/username
