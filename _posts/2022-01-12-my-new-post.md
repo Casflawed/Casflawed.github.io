@@ -1,7 +1,7 @@
 ---
 layout: post
 title: My New Post
-date: 2022-01-12 14:07 +0800
+date: 2022-01-12 14:07:32 +0800
 categories: [算法, 二分查找]
 tags: [二分查找]
 ---
