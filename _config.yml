@@ -26,7 +26,7 @@ description: >-                        # used by seo meta and the atom feed
   专注于 Java 核心技术学习笔记、计算机科学知识分享、项目开发日志的个人博客空间
 
 # fill in the protocol & hostname for your site, e.g., 'https://username.github.io'
-url: 'https://Casflawed.github.io'
+url: 'https://casflawed.github.io'
 
 github:
   username: Casflawed             # change to your github username
