@@ -47,4 +47,6 @@ public class BeanDefinition{
 
 ## 拆分容器
 
-在step1中我们总结过Spring Ioc容器的主要工作，包括Bean定义、Bean注册、Bean初始化、依赖注入；而现在这些功能都被耦合在同一个BeanFactory类中，这样不便于后期扩展，为了提供更好的可扩展性，我们应该将其分解，一个类做一件事
+在step1中我们总结过Spring Ioc容器的主要工作，包括Bean定义、Bean注册、Bean初始化、依赖注入；而现在这些功能都被耦合在同一个BeanFactory类中，这样不便于后期扩展，为了提供更好的可扩展性，我们应该将其分解，一个类做一件事；经分析我们发现，容器的真正起作用时是当我们需要从中获取Bean对象的时候，那么容器需要能够自己创建Bean对象，并且暂存起来，那么我们看下BeanFactory的继承链是如何的：
+
+![BeanFactory的继承链](/blog/202204251710776.png "BeanFactory的继承链")
