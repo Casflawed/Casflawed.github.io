@@ -1,7 +1,7 @@
 ---
 title: Spring-step3
 date: 2022-04-22 +/-TTTT
-categories: [Spring,造轮子]
+categories: [造轮子,Spring]
 tags: [设计模式,CGLIB]     # TAG names should always be lowercase
 ---
 
@@ -134,3 +134,6 @@ public class CglibInitializeBeanStrategy implements InitializeBeanStrategy{
 
 ## 总结：步骤流程图
 ![流程图](/blog/202204301936841.png "流程图")
+
+## 扩展
+通过一步步优化扩展，我们的spring容器已经具备了自主创建对象的能力，但是相比正统的Spring容器，我们的容器还无法对对象属性进行赋值，那么下一步就让我们解决对象属性注入的问题吧

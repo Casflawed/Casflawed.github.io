@@ -1,7 +1,7 @@
 ---
 title: Spring-step2
 date: 2022-04-22 +/-TTTT
-categories: [Spring,造轮子]
+categories: [造轮子,Spring]
 tags: [设计模式,系统设计]     # TAG names should always be lowercase
 ---
 
