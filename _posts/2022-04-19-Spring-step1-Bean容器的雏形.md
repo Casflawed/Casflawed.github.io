@@ -1,5 +1,5 @@
 ---
-title: Spring-step1
+title: Spring-step1-Bean容器的雏形
 date: 2022-04-19 +/-TTTT
 categories: [造轮子,Spring]
 tags: [设计模式]     # TAG names should always be lowercase
@@ -11,12 +11,12 @@ tags: [设计模式]     # TAG names should always be lowercase
 
 - Bean定义
 - Bean注册，所谓的注册就像DriveManger对数据库驱动进行注册的那样，实际就是将Bean或者与Bean直接关联的信息用容器进行保存，待要使用时就用索引（可以是名称、id、或其他任何能够唯一对应Bean的事务）取出
-- Bean初始化
+- Bean对象创建
 - 依赖注入
 
 ## 我们为什么会需要Spring Ioc
 
-1.在了解到Spring Ioc的功能时，我又会有这样的问题：问题1，为什么Spring Ioc要按照Bean定义、Bean注册、Bean初始化、依赖注入的流程去管理Bean；问题2，我们最初选择使用Spring IoC容器是为了什么？
+1.在了解到Spring Ioc的功能时，我又会有这样的问题：问题1，为什么Spring Ioc要按照Bean定义、Bean注册、Bean对象创建、依赖注入的流程去管理Bean；问题2，我们最初选择使用Spring IoC容器是为了什么？
 
 首先解答问题2：
 

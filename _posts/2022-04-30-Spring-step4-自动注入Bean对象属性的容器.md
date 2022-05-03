@@ -1,5 +1,5 @@
 ---
-title: Spring-step4
+title: Spring-step4-自动注入Bean对象属性的容器
 date: 2022-04-30 +/-TTTT
 categories: [造轮子,Spring]
 tags: [系统设计,封装,反射]     # TAG names should always be lowercase
