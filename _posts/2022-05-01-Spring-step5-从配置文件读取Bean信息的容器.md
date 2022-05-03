@@ -40,4 +40,290 @@ tags: [系统设计,封装,反射]     # TAG names should always be lowercase
 
 ![原料加工成的工作](/blog/202205021733589.png "原料加工成的工作")
 
-### 
+### 给原料来源分渠道
+由于XML配置文件可能来自本地，classpath，或者云文件，所以实际上XML配置文件的读取是有多种策略的，因此依照策略模式，建立XML配置文件的不同读取策略
+
+```java
+public interface Resource {
+
+    InputStream getInputStream() throws IOException;
+
+}
+```
+
+```java
+public class ClassPathResource implements Resource {
+
+    // 为什么要定义path和classLoader两个属性
+    // 1.原本让我来写，classLoader是写死的（方便客户端指定特定的classLoader，毕竟classLoader与资源类型有点关系？）
+    // 2.path也可以直接传递给方法（延长path的生命周期？）
+
+    private final String path;
+    private ClassLoader classLoader;
+
+    public ClassPathResource(String path) {
+        this(path, (ClassLoader) null);
+    }
+
+    public ClassPathResource(String path, ClassLoader classLoader) {
+        Assert.notNull(path, "Path must not be null");
+        this.path = path;
+        this.classLoader = (classLoader != null ? classLoader : ClassUtils.getDefaultClassLoader());
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        InputStream is = classLoader.getResourceAsStream(path);
+        if (is == null) {
+            throw new FileNotFoundException(
+                    this.path + " cannot be opened because it does not exist");
+        }
+        return is;
+    }
+}
+```
+
+```java
+public class FileSystemResource implements Resource {
+
+    private final File file;
+
+    private final String path;
+
+    public FileSystemResource(File file) {
+        this.file = file;
+        this.path = file.getPath();
+    }
+
+    public FileSystemResource(String path) {
+        this.file = new File(path);
+        this.path = path;
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        return new FileInputStream(this.file);
+    }
+
+    public final String getPath() {
+        return this.path;
+    }
+
+}
+```
+
+```java
+public class UrlResource implements Resource{
+
+    private final URL url;
+
+    public UrlResource(URL url) {
+        Assert.notNull(url,"URL must not be null");
+        this.url = url;
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        URLConnection con = this.url.openConnection();
+        try {
+            return con.getInputStream();
+        }
+        catch (IOException ex){
+            if (con instanceof HttpURLConnection){
+                ((HttpURLConnection) con).disconnect();
+            }
+            throw ex;
+        }
+    }
+
+}
+```
+
+### 读取资源时首先要判断是什么类型的资源
+```java
+public interface ResourceLoader {
+
+    /**
+     * Pseudo URL prefix for loading from the class path: "classpath:"
+     */
+    String CLASSPATH_URL_PREFIX = "classpath:";
+
+    Resource getResource(String location);
+
+}
+```
+
+```java
+public class DefaultResourceLoader implements ResourceLoader {
+
+    @Override
+    public Resource getResource(String location) {
+        Assert.notNull(location, "Location must not be null");
+        if (location.startsWith(CLASSPATH_URL_PREFIX)) {
+            return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()));
+        }
+        else {
+            try {
+                URL url = new URL(location);
+                return new UrlResource(url);
+            } catch (MalformedURLException e) {
+                return new FileSystemResource(location);
+            }
+        }
+    }
+
+}
+```
+
+### 从资源中解析BeanDefiniton
+```java
+/**
+ * Simple interface for bean definition readers.
+ */
+public interface BeanDefinitionReader {
+
+    BeanDefinitionRegistry getRegistry();
+
+    ResourceLoader getResourceLoader();
+
+    void loadBeanDefinitions(Resource resource) throws BeansException;
+
+    void loadBeanDefinitions(Resource... resources) throws BeansException;
+
+    void loadBeanDefinitions(String location) throws BeansException;
+
+}
+```
+
+```java
+/**
+ * Abstract base class for bean definition readers which implement
+ * the {@link BeanDefinitionReader} interface.
+ */
+public abstract class AbstractBeanDefinitionReader implements BeanDefinitionReader {
+
+    private final BeanDefinitionRegistry registry;
+
+    private ResourceLoader resourceLoader;
+
+    protected AbstractBeanDefinitionReader(BeanDefinitionRegistry registry) {
+        this(registry, new DefaultResourceLoader());
+    }
+
+    public AbstractBeanDefinitionReader(BeanDefinitionRegistry registry, ResourceLoader resourceLoader) {
+        this.registry = registry;
+        this.resourceLoader = resourceLoader;
+    }
+
+    @Override
+    public BeanDefinitionRegistry getRegistry() {
+        return registry;
+    }
+
+    @Override
+    public ResourceLoader getResourceLoader() {
+        return resourceLoader;
+    }
+
+}
+```
+
+```java
+/**
+ * Bean definition reader for XML bean definitions.
+ */
+public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
+
+    public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
+        super(registry);
+    }
+
+    public XmlBeanDefinitionReader(BeanDefinitionRegistry registry, ResourceLoader resourceLoader) {
+        super(registry, resourceLoader);
+    }
+
+    @Override
+    public void loadBeanDefinitions(Resource resource) throws BeansException {
+        try {
+            try (InputStream inputStream = resource.getInputStream()) {
+                doLoadBeanDefinitions(inputStream);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new BeansException("IOException parsing XML document from " + resource, e);
+        }
+    }
+
+    @Override
+    public void loadBeanDefinitions(Resource... resources) throws BeansException {
+        for (Resource resource : resources) {
+            loadBeanDefinitions(resource);
+        }
+    }
+
+    @Override
+    public void loadBeanDefinitions(String location) throws BeansException {
+        ResourceLoader resourceLoader = getResourceLoader();
+        Resource resource = resourceLoader.getResource(location);
+        loadBeanDefinitions(resource);
+    }
+
+    protected void doLoadBeanDefinitions(InputStream inputStream) throws ClassNotFoundException {
+        Document doc = XmlUtil.readXML(inputStream);
+        Element root = doc.getDocumentElement();
+        NodeList childNodes = root.getChildNodes();
+
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            // 判断元素
+            if (!(childNodes.item(i) instanceof Element)) continue;
+            // 判断对象
+            if (!"bean".equals(childNodes.item(i).getNodeName())) continue;
+            
+            // 解析标签
+            Element bean = (Element) childNodes.item(i);
+            String id = bean.getAttribute("id");
+            String name = bean.getAttribute("name");
+            String className = bean.getAttribute("class");
+
+            // 获取 Class，方便获取类中的名称
+            Class<?> clazz = Class.forName(className);
+            // 优先级 id > name
+            String beanName = StrUtil.isNotEmpty(id) ? id : name;
+            if (StrUtil.isEmpty(beanName)) {
+                beanName = StrUtil.lowerFirst(clazz.getSimpleName());
+            }
+
+            // 定义Bean
+            BeanDefinition beanDefinition = new BeanDefinition(clazz);
+
+            // 读取属性并填充
+            for (int j = 0; j < bean.getChildNodes().getLength(); j++) {
+                if (!(bean.getChildNodes().item(j) instanceof Element)) continue;
+                if (!"property".equals(bean.getChildNodes().item(j).getNodeName())) continue;
+                // 解析标签：property
+                Element property = (Element) bean.getChildNodes().item(j);
+                String attrName = property.getAttribute("name");
+                String attrValue = property.getAttribute("value");
+                String attrRef = property.getAttribute("ref");
+
+                // 获取属性值：引入对象、值对象
+                Object value = StrUtil.isNotEmpty(attrRef) ? new BeanReference(attrRef) : attrValue;
+                // 创建属性信息
+                PropertyValue propertyValue = new PropertyValue(attrName, value);
+                beanDefinition.getPropertyValues().addPropertyValue(propertyValue);
+            }
+            if (getRegistry().containsBeanDefinition(beanName)) {
+                throw new BeansException("Duplicate beanName[" + beanName + "] is not allowed");
+            }
+            // 注册 BeanDefinition
+            getRegistry().registerBeanDefinition(beanName, beanDefinition);
+        }
+    }
+
+}
+```
+
+## 总结
+像spring这样的精妙设计一定是经过无数次修改，因此对于我自己来说想要一次性就写出这么完美的设计是很难的，不过认识到自己的上限，勇敢接受自己的不足；目前我已经掌握了流程图对功能进行分解，但是真正将文字描述的功能转化成代码，还有一段路要走；不过在设计并实践的过程中：
+
+1.保证功能得到实现，不要妄想一次性达到官方那种完美的状态
+2.由有缺陷的代码不断精进，不断完善才是一段设计精妙的代码该有的过程，同时可以借助流程图，类图等UML工具辅助设计
