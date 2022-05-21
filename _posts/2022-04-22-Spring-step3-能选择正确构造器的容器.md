@@ -1,7 +1,7 @@
 ---
 title: Spring-step3-能选择正确构造器的容器
 date: 2022-04-22 +/-TTTT
-categories: [造轮子,Spring]
+categories: [框架, Spring, Demo]
 tags: [设计模式,CGLIB]     # TAG names should always be lowercase
 ---
 

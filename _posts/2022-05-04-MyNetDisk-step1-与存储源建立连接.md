@@ -1,7 +1,7 @@
 ---
 title: MyNetDisk-step1-与存储源建立连接
 date: 2022-05-04 +/-TTTT
-categories: [项目,在线网盘]
+categories: [项目,JavaWeb,MyNetDisk]
 tags: [SpringBoot]     # TAG names should always be lowercase
 ---
 

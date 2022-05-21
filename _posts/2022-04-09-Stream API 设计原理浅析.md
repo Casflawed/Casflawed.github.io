@@ -1,7 +1,7 @@
 ---
 title: Stream API 设计原理浅析
 date: 2022-04-09 +/-TTTT
-categories: [Java, Java8特性, Stream API]
+categories: [编程语言, Java, Java8特性, Stream API]
 tags: [函数式接口, lambda表达式, 匿名类]     # TAG names should always be lowercase
 ---
 

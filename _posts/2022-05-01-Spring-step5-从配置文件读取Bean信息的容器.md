@@ -1,7 +1,7 @@
 ---
 title: Spring-step5-从配置文件读取Bean信息的容器
 date: 2022-05-01 +/-TTTT
-categories: [造轮子,Spring]
+categories: [框架,Spring]
 tags: [系统设计,封装,反射]     # TAG names should always be lowercase
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: MIT-scheme
 date: 2022-04-11 +/-TTTT
-categories: [函数式编程语言]
+categories: [编程语言,MIT-scheme]
 tags: []     # TAG names should always be lowercase
 ---
 
