@@ -1,7 +1,7 @@
 ---
 title: Junit的小demo
 date: 2022-03-21 +/-TTTT
-categories: [框架, Junit, Demo]
+categories: [框架, Junit]
 tags: [反射, 注解]     # TAG names should always be lowercase
 ---
 

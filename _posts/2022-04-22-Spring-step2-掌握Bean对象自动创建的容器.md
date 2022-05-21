@@ -1,7 +1,7 @@
 ---
 title: Spring-step2-掌握Bean对象自动创建的容器
 date: 2022-04-22 +/-TTTT
-categories: [框架, Spring, Demo]
+categories: [框架, Spring]
 tags: [设计模式,系统设计]     # TAG names should always be lowercase
 ---
 

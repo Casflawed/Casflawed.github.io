@@ -1,7 +1,7 @@
 ---
 title: Spring和SpringBoot常用注解
 date: 2022-03-25 +/-TTTT
-categories: [框架, Spring, 注解]
+categories: [框架, Spring]
 tags: [注解]     # TAG names should always be lowercase
 ---
 

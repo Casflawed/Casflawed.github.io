@@ -1,7 +1,7 @@
 ---
 title: Spring-step4-自动注入Bean对象属性的容器
 date: 2022-04-30 +/-TTTT
-categories: [框架, Spring, Demo]
+categories: [框架, Spring]
 tags: [系统设计,封装,反射]     # TAG names should always be lowercase
 ---
 

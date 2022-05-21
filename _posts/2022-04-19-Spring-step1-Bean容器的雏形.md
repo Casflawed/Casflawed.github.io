@@ -1,7 +1,7 @@
 ---
 title: Spring-step1-Bean容器的雏形
 date: 2022-04-19 +/-TTTT
-categories: [框架, Spring, Demo]
+categories: [框架, Spring]
 tags: [设计模式]     # TAG names should always be lowercase
 ---
 
