@@ -1,5 +1,5 @@
 ---
-title: 5.Vue Router的使用
+title: Vue Router的使用
 date: 2022-05-27 +/-TTTT
 categories: [前端,Vue]
 tags: []     # TAG names should always be lowercase
