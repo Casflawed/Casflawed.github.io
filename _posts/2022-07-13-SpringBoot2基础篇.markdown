@@ -5,48 +5,25 @@ categories: [框架, SpringBoot]
 tags: []     # TAG names should always be lowercase
 ---
 
-学习要求
+# 前言
+本笔记依照黑马视频链接：<br>
+[黑马SpringBoot](https://www.bilibili.com/video/BV15b4y1a7yG?spm_id_from=333.999.0.0&vd_source=ac4c81d3d3ecffb8a040265405d786b8)
 
-- 熟悉Spring基础 
-- 熟悉Maven使用
+我的IDEA版本：IntelliJ IDEA 2020.1(Ultimate Editon)
 
-环境要求
+# SpringBoot概述
+SpringBoot是由Pivotal团队提供的全新框架，其设计目的是用来简化Spring应用的初始搭建以及开发过程
 
-- Java8及以上 
-- Maven 3.5及以上：https://docs.spring.io/spring-boot/docs/current/reference/html/getting-started.html#getting-started-system-requirements
+# 新建SpringBoot工程
+1.创建新模块，选择Spring Initializr，并配置模块相关基础信息
 
-学习资料
+![img](https://img-blog.csdnimg.cn/0839ab0b92fc4deea70e706e84c9a27d.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
 
--  Spring Boot官网：https://spring.io/projects/spring-boot  
--  Spring Boot 官方文档：https://docs.spring.io/spring-boot/docs/current/reference/html/  
--  Spring Boot 中文文档：http://felord.cn/_doc/_springboot/2.1.5.RELEASE/_book/  
--  视频地址：https://www.bilibili.com/video/BV15b4y1a7yG?p=24&share_source=copy_web  
--  源码地址：GitHub Gitee 
+2.选择当前模块需要使用的技术集
 
+![img](https://img-blog.csdnimg.cn/5108acf698f8423aa6d0ecc73f133a4e.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
 
-- 基础篇
-
-```java
-Java基础语法
-Spring与SpringMVC
-	知道Spring是用来管理bean，能够基于Restful实现页面请求交互功能
-Mybatis与Mybatis-Plus
-	基于Mybatis和MybatisPlus能够开发出包含基础CRUD功能的标准Dao模块
-数据库MySQL
-	能够读懂基础CRUD功能的SQL语句
-服务器
-	知道服务器与web工程的关系，熟悉web服务器的基础配置
-maven
-	知道maven的依赖关系，知道什么是依赖范围，依赖传递，排除依赖，可选依赖，继承
-web技术（含vue，ElementUI)
-	知道vue如何发送ajax请求，如何获取响应数据，如何进行数据模型双向绑定
-```
-
-- SpringBoot是由Pivotal团队提供的全新框架，其设计目的是用来简化Spring应用的初始搭建以及开发过程
-
-①：创建新模块，选择Spring Initializr，并配置模块相关基础信息 ![img](https://img-blog.csdnimg.cn/0839ab0b92fc4deea70e706e84c9a27d.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16) ②：选择当前模块需要使用的技术集 ![img](https://img-blog.csdnimg.cn/5108acf698f8423aa6d0ecc73f133a4e.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
-
-③：开发控制器类
+3.开发控制器类
 
 ```java
 //Rest 模式
@@ -63,18 +40,20 @@ public class BookController {
 }
 ```
 
+4.运行自动生成的Application类
 
-④：运行自动生成的Application类 ![img](https://img-blog.csdnimg.cn/e0d7e6b7371845e8a91aa6aebaccc94c.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16) ⑤：打开浏览器访问url地址为：http://localhost:8080/books
+![img](https://img-blog.csdnimg.cn/e0d7e6b7371845e8a91aa6aebaccc94c.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
 
+5.打开浏览器访问url地址为：http://localhost:8080/books
 
 ![img](https://img-blog.csdnimg.cn/163c4ae2c0c0411a92cad10009683141.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
 
-- 最简SpringBoot程序所包含的基础文件 (pom.xml文件 和 Application类 ) 
- <ul> 
-  - pom.xml文件 
- </ul> 
+## 工程文件介绍
+最简SpringBoot程序所包含的基础文件 (pom.xml文件 和 Application类 ) 
 
-```java
+1.pom.xml文件 
+
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -101,121 +80,30 @@ public class BookController {
 </project>
 ```
 
-- Application类
+2.Application类
 
 ```java
 @SpringBootApplication
 public class Springboot0101QuickstartApplication {
-   
-
     public static void main(String[] args) {
    
         SpringApplication.run(Springboot0101QuickstartApplication.class, args);
     }
-
 }
 ```
 
+Spring程序与SpringBoot程序对比<br>
+![img](https://img-blog.csdnimg.cn/414b7f3210694d5a8686a62ae4f9feff.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
 
-- Spring程序与SpringBoot程序对比 ![img](https://img-blog.csdnimg.cn/414b7f3210694d5a8686a62ae4f9feff.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16) 注意: 基于idea开发SpringBoot程序需要确保联网且能够加载到程序框架结构
+**注意: 基于idea开发SpringBoot程序需要确保联网且能够加载到程序框架结构**
 
-小结:
+## IDEA的SpringBoot工程中隐藏不常用的文件
+如以.mvn、.gitignore、HELP.md、mvnw、mvnw.cmd、.iml为后缀的文件，我们再开发的时候通常不会修改其中的内容，这个时候觉得这些文件碍眼可以选择再IDEA中隐藏它们 
+![不常修改文件](/blog/202207151533521.png "不常修改文件")
 
-1. 开发SpringBoot程序可以根据向导进行联网快速制作 
-2. SpringBoot程序需要基于JDK8进行制作 
-3. SpringBoot程序中需要使用何种功能通过勾选选择技术 
-4. 运行SpringBoot程序通过运行Application程序入口进行
+处理方法：<br>
+![处理方法](/blog/202207151622151.png  "处理方法")
 
-
-
-- 基于SpringBoot官网创建项目，地址：https://start.spring.io/ ![img](https://img-blog.csdnimg.cn/e74fee358083447a80a38fde8ade98e2.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
-
-小结:
-
-1. 打开SpringBoot官网，选择Quickstart Your Project 
-2. 创建工程，并保存项目 
-3. 解压项目，通过IDE导入项目
-
-
-
-- 基于阿里云创建项目，地址：https://start.aliyun.com ![img](https://img-blog.csdnimg.cn/6bcd048d7f014158b0aab0617ca36c63.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
-
-注意事项:
-
--  阿里云提供的坐标版本较低，如果需要使用高版本，进入工程后手工切换SpringBoot版本  
--  阿里云提供的工程模板与Spring官网提供的工程模板略有不同  
-
-小结:
-
-1. 选择start来源为自定义URL 
-2. 输入阿里云start地址 
-3. 创建项目
-
-
-
-- 手工创建项目（手工导入坐标） ![img](https://img-blog.csdnimg.cn/1724035ac0724e3ca3177fd10e77f77a.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
-
-```java
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.5.6</version>
-    </parent>
-
-    <groupId>com.example</groupId>
-    <artifactId>springboot_01_04_quickstart</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-    </dependencies>
-</project>
-```
-
-- 手工创建项目（手工制作引导类）
-
-```java
-@SpringBootApplication
-public class Application {
-   
-
-    public static void main(String[] args) {
-   
-        SpringApplication.run(Application.class, args);
-    }
-
-}
-```
-
-小结:
-
-1. 创建普通Maven工程 
-2. 继承spring-boot-starter-parent 
-3. 添加依赖spring-boot-starter-web 
-4. 制作引导类Application
-
-总结:
-
-1. 创建SpringBoot工程的四种方式 基于Idea创建SpringBoot工程 基于官网创建SpringBoot工程 基于阿里云创建SpringBoot工程 **手工创建Maven工程修改为SpringBoot工程**
-
-
-
-- .mvn;.gitignore;HELP.md;mvnw;mvnw.cmd;*.iml; ![img](https://img-blog.csdnimg.cn/e2014530ac5b432ba546e44ec00c1ca4.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16)
-
-
-
-2018版的做法: ![img](https://img-blog.csdnimg.cn/52caab4e4aae44aa98a3fc8815c93083.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16) 较新版本的做法 : ![img](https://img-blog.csdnimg.cn/fd8efbad436e406c900ad501d3af496e.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5pqX5oGL6Iqx6aaZ,size_20,color_FFFFFF,t_70,g_se,x_16) 小结:
-
-1. Idea中隐藏指定文件或指定类型文件 Setting → File Types → Ignored Files and Folders 输入要隐藏的文件名，支持*号通配符 回车确认添加
 
 
 
