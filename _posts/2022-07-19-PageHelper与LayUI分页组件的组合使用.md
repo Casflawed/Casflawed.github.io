@@ -1,7 +1,7 @@
 ---
 title: PageHelper与LayUI分页组件的组合使用
 date: 2022-07-19 +/-TTTT
-categories: [项目, 牛客网讨论区]
+categories: [项目,牛客网讨论区]
 tags: []     # TAG names should always be lowercase
 ---
 
@@ -10,7 +10,8 @@ tags: []     # TAG names should always be lowercase
 
 # PageHelper的使用
 1. 导入依赖
-```java
+
+```xml
 <!-- MyBatis 分页插件 -->
 <dependency>
     <groupId>com.github.pagehelper</groupId>
@@ -102,21 +103,25 @@ order by `type` desc
     > 但如果是通过json工具像fastjson、gson将Java对象转换成json字符串，前端将json字符串解析成json对象就可以顺利提取属性了
 
 3. 由于js提取模板引擎的数据比较困难，我们可以使用表单的隐藏域来实现
+
 ```html
 <input type="hidden" name="pageInfo" th:value="${pageInfo}">
 ```
+
 ```JavaScript
 $('input[name="pageInfo"]').val()   //js通过这条语句就可以获取value了
 ```
 
 # LayUI分页组件使用
 1. 引入依赖
+
 ```html
 <link rel="stylesheet" th:href="@{/layui/css/layui.css}">
 <script th:src="@{/layui/layui.js}"></script>
 ```
 
 2. 在分页条容器中加载分页条
+
 ```JavaScript
 /**
  * 分页条渲染函数，在页面加载时执行
@@ -143,7 +148,7 @@ layui.use(['laypage', 'layer'], function () {
 
 ## LayUI分页组件的特点
 
-1. 相比与[pagination.js](https://pagination.js.org/)，laypage不需要以页面数据为数据源
+1. 相比与 [pagination.js](https://pagination.js.org/) ，laypage不需要以页面数据为数据源
 
     >如果我们使用的是pagination.js，那么我们需要从后端获取所有的分页数据，这样和pagehelper的结合使用就会显得及其不优雅，
     >而且由于是同步分页，那么每次页面刷新都会执行庞大的数据查询，效率很低
