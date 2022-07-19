@@ -63,7 +63,7 @@ PageInfo<DiscussPost> discussPostPageInfo = new PageInfo<>(discussPostMapper.sel
 1. 开启分页，`PageHelper.startPage(pageNum, pageSize);`，pageNum是当前页码，pageSize是每页的记录数
 2. pageInfo封装需要分页的数据，selectDiscussPosts对应的SQL如下：
 
-```sql
+```xml
 <sql id="Base_Column_List" >
 id, user_id, title, type, status, create_time, comment_count, score
 </sql>
@@ -105,7 +105,7 @@ order by `type` desc
 ```html
 <input type="hidden" name="pageInfo" th:value="${pageInfo}">
 ```
-```js
+```JavaScript
 $('input[name="pageInfo"]').val()   //js通过这条语句就可以获取value了
 ```
 
@@ -113,11 +113,11 @@ $('input[name="pageInfo"]').val()   //js通过这条语句就可以获取value�
 1. 引入依赖
 ```html
 <link rel="stylesheet" th:href="@{/layui/css/layui.css}">
-<script th:src="@{/layui/layui.js}"></script>`
+<script th:src="@{/layui/layui.js}"></script>
 ```
 
 2. 在分页条容器中加载分页条
-```js
+```JavaScript
 /**
  * 分页条渲染函数，在页面加载时执行
  */
@@ -138,7 +138,7 @@ layui.use(['laypage', 'layer'], function () {
             }
         }
     });
-})key: "value", 
+})
 ```
 
 ## LayUI分页组件的特点
