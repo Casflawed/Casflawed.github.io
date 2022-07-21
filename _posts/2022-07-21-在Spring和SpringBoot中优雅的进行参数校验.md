@@ -95,7 +95,6 @@ public class PersonController {
 ```java
 @RestController
 @RequestMapping("/api/person")
-@Validated
 public class PersonController {
 
     @PostMapping
@@ -104,6 +103,8 @@ public class PersonController {
     }
 }
 ```
+
+**注意：这里开启Spring数据校验使用@Validated也可以**
 
 **`PersonRequest`**
 
@@ -138,154 +139,211 @@ public class PersonRequest {
 - `^string$` ：精确匹配 string 字符串
 - `(^Man$|^Woman$|^UGM$)` : 值只能在 Man,Woman,UGM 这三个值中选择
 
-## 自定义全局异常处理器捕获数据校验异常
+### 自定义全局异常处理器捕获数据校验异常
 
 自定义异常处理器可以帮助我们捕获异常，并进行一些简单的处理。
 
 **`GlobalExceptionHandler`**
 
 ```java
-@ControllerAdvice(assignableTypes = {PersonController.class})
+@Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
+    /**
+     * 处理参数校验失败异常
+     * @param exception 异常类
+     * @return 响应
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(
-            MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    public ResultBean exceptionHandler(MethodArgumentNotValidException exception){
+      //我们主要获取这个接口BindingResult的数据，它就包含了我们使用@RequestBody绑定的参数的所有信息，无论是校验异常错误信息还是JavaBean参数的属性信息
+      BindingResult bindingResult = exception.getBindingResult();
+      
+      Map<String, String> errorMap = new HashMap<>();
+      StringBuffer buffer = new StringBuffer();
+      if(bindingResult.getFieldErrors() != null){
+        for (FieldError fieldError : bindingResult.getFieldErrors()) {
+          String field = fieldError.getField();
+          Object rejectedValue = fieldError.getRejectedValue();
+          String defaultMessage = fieldError.getDefaultMessage();
+          errorMap.put(field, defaultMessage);
+          String msg = String.format("错误字段：%s, 错误值：%s, 原因：%s", field, rejectedValue, defaultMessage);
+          buffer.append(msg);
+          log.warn("错误字段：[{}], 错误值：[{}], 原因：[{}]", field, rejectedValue, defaultMessage);
+        }
+      }
+      return ResultBean.error(buffer.toString(), errorMap, 400);
     }
 }
 ```
 
-## 通过测试验证
-
-下面我通过 `Postman` 这种工具来验证。
+### 通过Postman测试验证
 
 **验证成功的情况**
 
-![顺利接收JavaBean](/blog/202207211838769.png "Optional title")
+![顺利接收JavaBean](/blog/202207211924515.png "Optional title")
 
 **验证失败的情况**
 
-![Alt text](/path/to/img.jpg "Optional title")
+![三个参数都错误](/blog/202207211923143.png "Optional title")
 
-### 验证请求参数
 
-验证请求参数（Path Variables 和 Request Parameters）即是验证被 `@PathVariable` 以及 `@RequestParam` 标记的方法参数。
+顺便一提，如何在PostMan发送请求体json数据，也就是说后端用@RequestBody接收的参数：
+
+1. 设置请求头`Content-Type:application/json`，content-type首字母小写也是可行的
+
+![设置Content-Type](/blog/202207211928769.png "Optional title")
+
+2. 传递json参数
+
+![传递json参数](/blog/202207211929071.png "Optional title")
+
+## 验证请求参数
+
+这些参数通常被 `@PathVariable` 以及 `@RequestParam`标记，并且相对于JavaBean的参数，我们往往将其称为平铺参数
+
+**注意：这里适用@Valid注解是不行的，因为它要求待校验的入参是JavaBean，所以如果需要校验平铺参数，请使用@Validated开启Spring自动参数校验**
 
 **`PersonController`**
 
-**一定一定不要忘记在类上加上 `Validated` 注解了，这个参数可以告诉 Spring 去校验方法参数。**
-
 ```java
 @RestController
-@RequestMapping("/api/persons")
+@RequestMapping("/api/person")
 @Validated
 public class PersonController {
+  @GetMapping("/{id}")
+  public ResponseEntity<Integer> getPersonByID(@PathVariable("id") @Max(value = 5, message = "超过 id 的范围了") Integer id) {
+    return ResponseEntity.ok().body(id);
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Integer> getPersonByID(@Valid @PathVariable("id") @Max(value = 5, message = "超过 id 的范围了") Integer id) {
-        return ResponseEntity.ok().body(id);
-    }
-
-    @PutMapping
-    public ResponseEntity<String> getPersonByName(@Valid @RequestParam("name") @Size(max = 6, message = "超过 name 的范围了") String name) {
-        return ResponseEntity.ok().body(name);
-    }
+  @PutMapping("/{name}")
+  public ResponseEntity<String> getPersonByName(@RequestParam("name") @Size(max = 6, message = "超过 name 的范围了") String name) {
+    return ResponseEntity.ok().body(name);
+  }
 }
 ```
 
 **`ExceptionHandler`**
 
 ```java
-  @ExceptionHandler(ConstraintViolationException.class)
-  ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
-     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-  }
+/**
+* 处理平铺参数校验失败
+*/
+@ExceptionHandler(ConstraintViolationException.class)
+public ResultBean exceptionHandler(ConstraintViolationException exception){
+    log.warn(exception.getMessage());
+    return ResultBean.error(exception.getMessage(), 400);
+}
 ```
 
-**通过测试验证**
+### 通过Postman测试验证
+
+**验证成功的情况**
+
+![顺利接收JavaBean](/blog/202207212015566.png "Optional title")
+
+**验证失败的情况**
+
+![三个参数都错误](/blog/202207212015953.png "Optional title")
+
+
+# 验证 Service 中的方法
+我们不仅可以使用@Validated和@Valid验证Controller组件，也可以验证其他Spring管理的组件，比如Service，**不过Controller一般不提供接口，而Service一般是面向接口编程**，而这个地方有坑，需要注意下面几点：
+
+1. 在实现类中重定义接口方法的参数校验配置会失败且会报错：`javax.validation.ConstraintDeclarationException: HV000151: A method overriding another method must not redefine the parameter constraint configuration`，这个异常信息也告诉我们：参数的校验配置应该写在接口方法中，并且实现类不能修改配置，要么保持一样，要么可以不用写参数校验配置
+2. 在非Controller组件中，像Service，必须组合使用@Validated和@Valid，其中@Validated作为类注解、@Valid作为方法参数注解javaBean，这样参数校验才会生效，并且它产生的异常是`ConstraintViolationException`，这个跟之前Controller中的平铺参数校验产生的异常是相同的，这个异常没有继承`BindException`接口，相对而言它的错误不好像`BindException`和`MethodArgumentNotValidException`那样处理
+3. 如果方法参数是平铺参数，那么只要加@Validated就行了
+```java
+@Service
+@Validated
+public class PersonServiceImpl implements PersonService {
+
+  @Override
+  public PersonRequest insertPerson(@NotNull @Min(10) Integer id, @NotNull String name) {
+    return null;
+  }
+}
+
+```
+4. @Validated可以放在接口中，也可以放在实现类中，不过我一般放在实现类中
+
+**PersonService**
 
 ```java
-@Test
-public void should_check_path_variable() throws Exception {
-    mockMvc.perform(get("/api/person/6")
-                    .contentType(MediaType.APPLICATION_JSON))
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string("getPersonByID.id: 超过 id 的范围了"));
-}
-
-@Test
-public void should_check_request_param_value2() throws Exception {
-    mockMvc.perform(put("/api/person")
-                    .param("name", "snailclimbsnailclimb")
-                    .contentType(MediaType.APPLICATION_JSON))
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string("getPersonByName.name: 超过 name 的范围了"));
+public interface PersonService {
+  PersonRequest insertPerson(@Valid PersonRequest person);
 }
 ```
 
-**使用 `Postman` 验证**
-
-![](https://img-blog.csdnimg.cn/20210421190508416.png)
-
-![](https://img-blog.csdnimg.cn/20210421190810975.png)
-
-## 验证 Service 中的方法
-
-我们还可以验证任何 Spring Bean 的输入，而不仅仅是 `Controller` 级别的输入。通过使用`@Validated`和`@Valid`注释的组合即可实现这一需求！
-
-一般情况下，我们在项目中也更倾向于使用这种方案。
-
-**一定一定不要忘记在类上加上 `Validated` 注解了，这个参数可以告诉 Spring 去校验方法参数。**
+**PersonServiceImpl**
 
 ```java
 @Service
 @Validated
-public class PersonService {
-
-    public void validatePersonRequest(@Valid PersonRequest personRequest) {
-        // do something
-    }
-
+public class PersonServiceImpl implements PersonService {
+  @Override
+  public PersonRequest insertPerson(PersonRequest person) {
+    return person;
+  }
 }
 ```
 
-**通过测试验证：**
+**ExceptionHandler**
 
 ```java
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class PersonServiceTest {
-    @Autowired
-    private PersonService service;
-
-    @Test
-    public void should_throw_exception_when_person_request_is_not_valid() {
-        try {
-            PersonRequest personRequest = PersonRequest.builder().sex("Man22")
-                    .classId("82938390").build();
-            service.validatePersonRequest(personRequest);
-        } catch (ConstraintViolationException e) {
-           // 输出异常信息
-            e.getConstraintViolations().forEach(constraintViolation -> System.out.println(constraintViolation.getMessage()));
-        }
-    }
+@ExceptionHandler(ConstraintViolationException.class)
+public ResultBean exceptionHandler(ConstraintViolationException exception){
+    log.warn(exception.getMessage());
+    return ResultBean.error(exception.getMessage(), 400);
 }
 ```
 
-输出结果如下：
+## 通过Postman测试验证
 
-```
-name 不能为空
-sex 值不在可选范围
+**参数校验失败**
+
+![classId为null](/blog/202207212236355.png "Optional title")
+
+# 级联校验
+级联校验关键点在于@Valid，级联校验的意思是JavaBean内部有其他JavaBean需要验证，那么这个JavaBean就需要加@Valid注解，并且只能用@Valid，因为它可以标记字段，@Validatd不行
+
+**PersonRequest**
+
+```java
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class PersonRequest {
+
+  @NotNull(message = "classId 不能为空")
+  private String classId;
+
+  @Pattern(regexp = "(^Man$|^Woman$|^UGM$)", message = "sex 值不在可选范围")
+  @NotNull(message = "sex 不能为空")
+  private String sex;
+
+  @Valid //让InnerChild的属性也参与校验
+  @NotNull
+  private InnerChild child;     //内部的JavaBean
+
+  @Getter
+  @Setter
+  @ToString
+  public static class InnerChild {
+    @Size(max = 33)
+    @NotNull(message = "name 不能为空")
+    private String name;
+
+    @NotNull(message = "年龄不能为空")
+    @Positive(message = "年龄只能为正数")
+    private Integer age;
+  }
+}
 ```
 
-## Validator 编程方式手动进行参数验证
+# Validator 编程方式手动进行参数验证
 
 某些场景下可能会需要我们手动校验并获得校验结果。
 
@@ -320,11 +378,11 @@ sex 值不在可选范围
 name 不能为空
 ```
 
-## 自定义 Validator(实用)
+# 自定义 Validator(实用)
 
 如果自带的校验注解无法满足你的需求的话，你还可以自定义实现注解。
 
-### 案例一:校验特定字段的值是否在可选范围
+## 案例一:校验特定字段的值是否在可选范围
 
 比如我们现在多了这样一个需求：`PersonRequest` 类多了一个 `Region` 字段，`Region` 字段只能是`China`、`China-Taiwan`、`China-HongKong`这三个中的一个。
 
@@ -384,7 +442,7 @@ mockMvc.perform(post("/api/person")
 
 ![](https://img-blog.csdnimg.cn/20210421203330978.png)
 
-### 案例二:校验电话号码
+## 案例二:校验电话号码
 
 校验我们的电话号码是否合法，这个可以通过正则表达式来做，相关的正则表达式都可以在网上搜到，你甚至可以搜索到针对特定运营商电话号码段的正则表达式。
 
@@ -445,7 +503,7 @@ mockMvc.perform(post("/api/person")
 
 ![](https://img-blog.csdnimg.cn/20210421204116640.png)
 
-## 使用验证组
+# 使用验证组
 
 验证组我们基本是不会用到的，也不太建议在项目中使用，理解起来比较麻烦，写起来也比较麻烦。简单了解即可！
 
@@ -510,7 +568,7 @@ public class PersonService {
 
 验证组使用下来的体验就是有点反模式的感觉，让代码的可维护性变差了！尽量不要使用！
 
-## 常用校验注解总结
+# 常用校验注解总结
 
 `JSR303` 定义了 `Bean Validation`（校验）的标准 `validation-api`，并没有提供实现。`Hibernate Validation`是对这个规范/规范的实现 `hibernate-validator`，并且增加了 `@Email`、`@Length`、`@Range` 等注解。`Spring Validation` 底层依赖的就是`Hibernate Validation`。
 
@@ -538,7 +596,7 @@ public class PersonService {
 - `@NotEmpty` 被注释的字符串的必须非空
 - `@Range(min=,max=,message=)` 被注释的元素必须在合适的范围内
 
-## 拓展
+# 拓展
 
 经常有小伙伴问到：“`@NotNull` 和 `@Column(nullable = false)` 两者有什么区别？”
 
@@ -548,4 +606,13 @@ public class PersonService {
 - `@Column(nullable = false)` : 是 JPA 声明列为非空的方法。
 
 总结来说就是即前者用于验证，而后者则用于指示数据库创建表的时候对表的约束。
+
+# 总结@Validated和@Valid的区别
+1. @Valid：标准JSR-303规范的标记型注解，用来标记验证属性和方法返回值，进行级联和递归校验
+2. @Validated：Spring的注解，是标准JSR-303的一个变种（补充），提供了一个分组功能，可以在入参验证时，根据不同的分组采用不同的验证机制
+3. 在Controller中校验方法参数时，使用@Valid和@Validated并无特殊差异（若不需要分组校验的话）
+4. 相比于@Validated，@Valid可以用在字段级别约束，用来表示级联校验。
+5. 相比与@Valid，@Validated可以用于提供分组功能
+6. 在非Controller组件中校验方法参数时，@Valid和@Validated必须配合使用，其中@Validated标记组件类，@Valid标记方法参数，如果方法参数是平铺参数，那么只需要用@Validated标记类组件就行了
+7. @Valid和@Validated作为类注解都有一个共同作用：开启Spring自动参数校验；但@Valid作为类注解只能标记Controller组件，而@Validated可以标记除Controller组件的其他组件比如@Service
 
