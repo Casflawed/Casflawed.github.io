@@ -598,14 +598,21 @@ public class PersonService {
 
 # 拓展
 
-经常有小伙伴问到：“`@NotNull` 和 `@Column(nullable = false)` 两者有什么区别？”
+1. “`@NotNull` 和 `@Column(nullable = false)` 两者有什么区别？”
 
-我这里简单回答一下：
+    > - `@NotNull`是 JSR 303 Bean 验证批注,它与数据库约束本身无关。
+    > - `@Column(nullable = false)` : 是 JPA 声明列为非空的方法。
 
-- `@NotNull`是 JSR 303 Bean 验证批注,它与数据库约束本身无关。
-- `@Column(nullable = false)` : 是 JPA 声明列为非空的方法。
+    > 总结来说就是即前者用于验证，而后者则用于指示数据库创建表的时候对表的约束。
 
-总结来说就是即前者用于验证，而后者则用于指示数据库创建表的时候对表的约束。
+2. 对校验进行分类
+    + 基础校验，空字符串，null，字符串长短，数值大小等
+    + 业务校验，比如传了用户id要检查该用户是否存在，购买的数量是否超库存。是有业务逻辑的。
+    + 权限校验，比如有没有权限给用户添加订单
+
+    > 对于基础校验，建议在Controller做<br>
+    > 对于业务校验应该放在Service中做，Service应该是集中业务逻辑的<br>
+    > 对于权限校验，要看权限是怎么设计的。我一般是在controller做的。<br>
 
 # 总结@Validated和@Valid的区别
 1. @Valid：标准JSR-303规范的标记型注解，用来标记验证属性和方法返回值，进行级联和递归校验
