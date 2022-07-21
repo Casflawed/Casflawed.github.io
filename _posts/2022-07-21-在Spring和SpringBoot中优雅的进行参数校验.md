@@ -138,9 +138,11 @@ public class PersonRequest {
 - `^string$` ：精确匹配 string 字符串
 - `(^Man$|^Woman$|^UGM$)` : 值只能在 Man,Woman,UGM 这三个值中选择
 
-**`GlobalExceptionHandler`**
+## 自定义全局异常处理器捕获数据校验异常
 
-自定义异常处理器可以帮助我们捕获异常，并进行一些简单的处理。如果对于下面的处理异常的代码不太理解的话，可以查看这篇文章 [《SpringBoot 处理异常的几种常见姿势》](https://mp.weixin.qq.com/s?__biz=Mzg2OTA0Njk0OA==&mid=2247485568&idx=2&sn=c5ba880fd0c5d82e39531fa42cb036ac&chksm=cea2474bf9d5ce5dcbc6a5f6580198fdce4bc92ef577579183a729cb5d1430e4994720d59b34&token=1924773784&lang=zh_CN#rd)。
+自定义异常处理器可以帮助我们捕获异常，并进行一些简单的处理。
+
+**`GlobalExceptionHandler`**
 
 ```java
 @ControllerAdvice(assignableTypes = {PersonController.class})
@@ -159,38 +161,17 @@ public class GlobalExceptionHandler {
 }
 ```
 
-**通过测试验证**
+## 通过测试验证
 
-下面我通过 `MockMvc` 模拟请求 `Controller` 的方式来验证是否生效。当然了，你也可以通过 `Postman` 这种工具来验证。
+下面我通过 `Postman` 这种工具来验证。
 
-```java
-@SpringBootTest
-@AutoConfigureMockMvc
-public class PersonControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
+**验证成功的情况**
 
-    @Autowired
-    private ObjectMapper objectMapper;
-    /**
-     * 验证出现参数不合法的情况抛出异常并且可以正确被捕获
-     */
-    @Test
-    public void should_check_person_value() throws Exception {
-        PersonRequest personRequest = PersonRequest.builder().sex("Man22")
-                .classId("82938390").build();
-        mockMvc.perform(post("/api/personRequest")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(personRequest)))
-                .andExpect(MockMvcResultMatchers.jsonPath("sex").value("sex 值不在可选范围"))
-                .andExpect(MockMvcResultMatchers.jsonPath("name").value("name 不能为空"));
-    }
-}
-```
+![顺利接收JavaBean](/blog/202207211838769.png "Optional title")
 
-**使用 `Postman` 验证**
+**验证失败的情况**
 
-![](https://img-blog.csdnimg.cn/20210421175345253.png)
+![Alt text](/path/to/img.jpg "Optional title")
 
 ### 验证请求参数
 
