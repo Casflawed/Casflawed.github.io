@@ -108,7 +108,7 @@ order by `type` desc
 <input type="hidden" name="pageInfo" th:value="${pageInfo}">
 ```
 
-```JavaScript
+```js
 $('input[name="pageInfo"]').val()   //js通过这条语句就可以获取value了
 ```
 
@@ -122,7 +122,7 @@ $('input[name="pageInfo"]').val()   //js通过这条语句就可以获取value�
 
 2. 在分页条容器中加载分页条
 
-```JavaScript
+```js
 /**
  * 分页条渲染函数，在页面加载时执行
  */
@@ -178,3 +178,5 @@ laypage能为我们自动生成分页条，但是不能帮我们设定页面切�
     > 8. window.location.origin（路径前面的url）——  http://www.myurl.com:8866
 
 通过上面的特性就可以动态获取url，这样在不同的开发环境下，就算url发生变化，程序也能正常运行
+
+2. 第二种就是为我们的元素绑定点击事件，在点击事件中我们可以发送ajax请求，请求获取到的数据在通过html拼接成html字符串，加载到html中就可以实现了，当然也可以同样调用window.location请求页面和数据，这样能够避免html拼接的痛苦，当然ajax请求应该也可以直接接收页面内容，只不过这个我还没有尝试过（不过使用Thymeleaf之后感觉vue还是方便太多）
