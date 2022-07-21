@@ -623,3 +623,7 @@ public class PersonService {
 6. 在非Controller组件中校验方法参数时，@Valid和@Validated必须配合使用，其中@Validated标记组件类，@Valid标记方法参数，如果方法参数是平铺参数，那么只需要用@Validated标记类组件就行了
 7. @Valid和@Validated作为类注解都有一个共同作用：开启Spring自动参数校验；但@Valid作为类注解只能标记Controller组件，而@Validated可以标记除Controller组件的其他组件比如@Service
 
+# 参考链接
+- [@Validated和@Valid的区别？校验级联属性（内部类）](https://www.cnblogs.com/yourbatman/p/11272939.html)
+- [Spring方法级别数据校验：@Validated + MethodValidationPostProcessor优雅的完成数据校验动作](https://blog.csdn.net/f641385712/article/details/97402946)
+- [如何在 Spring/Spring Boot 中做参数校验？你需要了解的都在这里！](https://mp.weixin.qq.com/s?__biz=Mzg2OTA0Njk0OA==&mid=2247485783&idx=1&sn=a407f3b75efa17c643407daa7fb2acd6&chksm=cea2469cf9d5cf8afbcd0a8a1c9cc4294d6805b8e01bee6f76bb2884c5bc15478e91459def49&token=292197051&lang=zh_CN)
