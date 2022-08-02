@@ -623,6 +623,9 @@ public class PersonService {
 6. 在非Controller组件中校验方法参数时，@Valid和@Validated必须配合使用，其中@Validated标记组件类，@Valid标记方法参数，如果方法参数是平铺参数，那么只需要用@Validated标记类组件就行了
 7. @Valid和@Validated作为类注解都有一个共同作用：开启Spring自动参数校验；但@Valid作为类注解只能标记Controller组件，而@Validated可以标记除Controller组件的其他组件比如@Service
 
+# 特别注意
+1. @NotNull(message = "您还未上传任何图像") MultipartFile multipartFile，校验MultipartFile是否为空，因为@NotNull直接对它进行标记，某种意义上它应该算平铺参数，所以最终的异常信息是`ConstraintViolationException`，所以应该使用@Validated
+
 # 参考链接
 - [@Validated和@Valid的区别？校验级联属性（内部类）](https://www.cnblogs.com/yourbatman/p/11272939.html)
 - [Spring方法级别数据校验：@Validated + MethodValidationPostProcessor优雅的完成数据校验动作](https://blog.csdn.net/f641385712/article/details/97402946)
