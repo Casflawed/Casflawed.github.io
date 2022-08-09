@@ -45,6 +45,8 @@ AOP让你可以使用简单可插拔的配置，在实际逻辑执行之前、�
 - 后置通知(After Advice): 无论连接点是通过什么方式退出的(正常返回或者抛出异常)都会执行在结束后执行这些Advice。通过 @After 注解使用。 
 - 围绕通知(Around Advice): 围绕连接点执行的Advice，就你一个方法调用。这是最强大的Advice。通过@Around 注解使用。
 
+**通知执行的顺序：@Around、@Before、@After、@Around、@AfterReturning，如果有异常就会执行@AfterThrowing
+
 ## 4、在Spring AOP中关注点和横切关注点有什么不同？
 
 关注点：是我们想在应用的模块中实现的行为。关注点可以被定义为：我们想实现以解决特定业务问题的方法。 横切关注点：是贯穿整个应用程序的关注点。像日志、安全和数据转换，它们在应用的每一个模块都是必须的，所以他们是一种横切关注点。
@@ -179,20 +181,17 @@ class UserDaoProxy implements InvocationHandler{
 
 基于Java的主要AOP实现有：AspectJ Spring AOP JBoss AOP
 
-## 1、准备工作
+AspectJ和Spring AOP对比：
 
-（1）Spring 框架一般都是基于 AspectJ 实现 AOP 操作
+1. AspectJ是语言级的，它的学习成本大，但是非常强大能够处理AOP的各种问题，并且它是在编译器植入代码
+2. Spring AOP是运行时动态织入代码，代码只能织入目标对象（一般是代理对象）的方法，它是一个性价比最高的解决方案，因为实际项目中往往只是将通知织入方法中
 
-AspectJ 不是 Spring 组成部分，独立 AOP 框架，一般把 AspectJ 和 Spirng 框架一起使用，进行 AOP 操作
+## 1、引入Spring AOP需要的依赖
+（1）工程中，引入Spring AOP相关的依赖 ![img](https://img-blog.csdnimg.cn/20210304135000351.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70) ![img](https://img-blog.csdnimg.cn/20210304135022991.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70) 
 
-（2）基于 AspectJ 实现 AOP 操作
+（2）Spring AOP实现方式：基于xml配置文件实现、注解方式实现（使用）
 
-- 基于 xml配置文件实现 
-- 基于注解方式实现（使用）
-
-
-
-（3）工程中，引入Spring AOP相关的依赖 ![img](https://img-blog.csdnimg.cn/20210304135000351.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70) ![img](https://img-blog.csdnimg.cn/20210304135022991.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70) （4）切入点表达式（ Point Cut Expression）
+（3）切入点表达式（ Point Cut Expression）
 
 切入点表达式作用：知道对哪个类里面的哪个方法进行增强 语法结构：
 
@@ -275,13 +274,7 @@ within(com.xyz.service..*)
 this(com.xyz.service.AccountService)
 ```
 
-## 2、AspectJ（此处之后单独讲一节，待补充）
-
-@AspectJ refers to a style of declaring aspects as regular Java classes annotated with annotations. The @AspectJ style was introduced by the AspectJ project as part of the AspectJ 5 release. Spring interprets the same annotations as AspectJ 5, using a library supplied by AspectJ for pointcut parsing and matching. The AOP runtime is still pure Spring AOP though, and there is no dependency on the AspectJ compiler or weaver.
-
-启用@AspectJ支持后，@AspectSpring将自动检测在应用程序上下文中使用@AspectJ方面（具有注释）的类定义的任何bean，并将其用于配置Spring AOP。
-
- [深入了解可以To———>《AspectJ编程指南》](https://www.eclipse.org/aspectj/doc/released/progguide/index.html)
+## 2、创建切面类
 
 (1) 创建类，在类里面定义方法，添加@Component注解，创建对象
 
