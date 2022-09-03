@@ -5,6 +5,11 @@ categories: [框架, Spring]
 tags: [注解]     # TAG names should always be lowercase
 ---
 
+# SpringBoot自动配置相关注解
+## @Import
+
+
+
 ## 使用@Value("${property}")读取简单的配置信息
 ```java
 @Value("${name}")
