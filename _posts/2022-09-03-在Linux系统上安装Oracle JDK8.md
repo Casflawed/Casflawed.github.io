@@ -41,7 +41,7 @@ Xshell远程连接服务器后，如下图所示：
 
 在末尾添加：
 
-export JAVA_HOME=/usr/local/java/jdk1.8.0_341
+export JAVA_HOME=/usr/local/java/jdk1.8.0_341<br>
 export PATH=$JAVA_HOME/bin:$PATH
 
 其中`$PATH`是指原本已经存在的环境变量，如果不加这个就会覆盖掉其他环境变量配置，造成严重的后果，编辑完毕后的效果如图所示：
