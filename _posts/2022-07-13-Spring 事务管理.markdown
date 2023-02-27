@@ -1,138 +1,116 @@
 ---
-title: Spring事务管理
+title: Spring 事务管理
 date: 2022-07-13 +/-TTTT
 categories: [框架, Spring]
 tags: []     # TAG names should always be lowercase
 ---
 
-# 一、什么是事务？
+# 什么是事务？
 
-## 1、事务的定义
+## 事务的定义
 
 
-（1）事务是数据库操作最基本单元，逻辑上一组操作，要么都成功，如果有一个失败所有操作都失败。 （2）案例分析 ![img](https://img-blog.csdnimg.cn/20210306163754480.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
+1. 事务是数据库操作最基本单元，逻辑上一组操作，要么都成功，如果有一个失败所有操作都失败。 
+2. 案例分析 
 
-如上述例子，Micah给Maruko转账，只有在转账成功的情况下，Micah的账户余额才会减少，Maruko的账户余额增加，不存在Micah账户的余额减少了，而Maruko的账户余额却不变。要么转账成功，2边余额都改变；要么转账失败，2边余额都保持不变。
+![img](https://img-blog.csdnimg.cn/20210306163754480.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
 
-## 2、事务的四大特性
+如上述例子，Micah 给 Maruko 转账，只有在转账成功的情况下，Micah 的账户余额才会减少，Maruko 的账户余额增加，不存在 Micah 账户的余额减少了，而Maruko的账户余额却不变。要么转账成功，两边余额都改变；要么转账失败，两边余额都保持不变。
+
+## 事务的四大特性
 
 - 原子性（Atomicity）：事务是一个原子操作，由一系列动作组成。事务的原子性确保动作要么全部完成，要么完全不起作用。 
-- 一致性（Consistency）：一旦事务完成（不管成功还是失败），系统必须确保它所建模的业务处于一致的状态，而不会是部分完成部分失败。在现实中的数据不应该被破坏。 
+- 一致性（Consistency）：一旦事务完成（不管成功还是失败），系统必须确保它所处的业务处于一致的状态，即数据能够对的上。
 - 隔离性（Isolation）：可能有许多事务会同时处理相同的数据，因此每个事务都应该与其他事务隔离开来，防止数据损坏。 
 - 持久性（Durability）：一旦事务完成，无论发生什么系统错误，它的结果都不应该受到影响，这样就能从任何系统崩溃中恢复过来。通常情况下，事务的结果被写到持久化存储器中。
 
-## 3、Spring事务管理
+## Spring 事务管理
 
-### （1）编程式事务管理
+### 编程式事务管理
 
-编程式事务管理是侵入性事务管理，使用TransactionTemplate或者直接使用PlatformTransactionManager，对于编程式事务管理，Spring推荐使用TransactionTemplate。
+编程式事务管理是侵入性事务管理，使用 TransactionTemplate 或者直接使用PlatformTransactionManager，对于编程式事务管理，Spring 推荐使用 TransactionTemplate。
 
-### （2）声明式事务管理
+### 声明式事务管理
 
-声明式事务管理建立在AOP之上，其本质是对方法前后进行拦截，然后在目标方法开始之前创建或者加入一个事务，执行完目标方法之后根据执行的情况提交或者回滚。编程式事务每次实现都要单独实现，但业务量大功能复杂时，使用编程式事务无疑是痛苦的，而声明式事务不同，声明式事务属于无侵入式，不会影响业务逻辑的实现，只需要在配置文件中做相关的事务规则声明或者通过注解的方式，便可以将事务规则应用到业务逻辑中。
+声明式事务管理建立在 AOP 之上，其本质是对方法前后进行拦截，**然后在目标方法开始之前创建或者加入一个事务，执行完目标方法之后根据执行的情况提交或者回滚。**编程式事务每次实现都要单独实现，但业务量大功能复杂时，使用编程式事务无疑是痛苦的，而声明式事务不同，声明式事务属于无侵入式，不会影响业务逻辑的实现，只需要在配置文件中做相关的事务规则声明或者通过注解的方式，便可以将事务规则应用到业务逻辑中。
 
-显然声明式事务管理要优于编程式事务管理，这正是Spring倡导的非侵入式的编程方式。唯一不足的地方就是声明式事务管理的粒度是方法级别，而编程式事务管理是可以到代码块的，但是可以通过提取方法的方式完成声明式事务管理的配置。
+显然声明式事务管理要优于编程式事务管理，这正是 Spring 倡导的非侵入式的编程方式。**唯一不足的地方就是声明式事务管理的粒度是方法级别，而编程式事务管理是可以到代码块的，但是可以通过提取方法的方式完成声明式事务管理的配置。**
 
-## 4、搭建事务操作环境
+## 搭建事务操作环境
 
 
 ![img](https://img-blog.csdnimg.cn/20210306171925127.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
 
-### （1）创建数据表
+### 创建数据表
 
 
 ![img](https://img-blog.csdnimg.cn/20210306172209731.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
 
-### （2）创建 service，搭建 dao，完成对象创建和注入关系
+### Service 和 Dao 层逻辑
 
-service 注入 dao，在 dao 注入 JdbcTemplate，在JdbcTemplate 注入 DataSource
+service 注入 dao，在 dao 注入 JdbcTemplate，在 JdbcTemplate 注入 DataSource
 
 ```java
 @Service
-public class UserService {
-   
-    //注入 dao 
-    @Autowired
-    private UserDao userDao;
-} @Repository
-public class UserDaoImpl implements UserDao {
-   
-    @Autowired 
-    private JdbcTemplate jdbcTemplate;
-}
-```
-
-### （3）在 dao 创建两个方法：多钱和少钱的方法，在 service 创建方法（转账的方法）
-
-```java
-@Repository
-public class UserDaoImpl implements UserDao {
-   
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    //lucy 转账 100 给mary 
-//少钱 
-    @Override
-    public void reduceMoney() {
-   
-        String sql = "update t_account set money=money-? where username=?";
-        jdbcTemplate.update(sql,100,"lucy");
-    }
-
-    //多钱 
-    @Override
-    public void addMoney() {
-   
-        String sql = "update t_account set money=money+? where username=?";
-        jdbcTemplate.update(sql,100,"mary");
-    }
-}
-
-@Service
-public class UserService {
-   
-    //注入 dao 
+public class UserServiceImpl extends UserService {
     @Autowired
     private UserDao userDao;
 
     //转账的方法 
     public void accountMoney() {
-   
-//lucy 少 100 
+        //lucy 少 100 
         userDao.reduceMoney();
-
-//mary 多 100 
+        //mary 多 100 
         userDao.addMoney();
+    }
+}
+
+@Repository
+public class UserDaoImpl implements UserDao {
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    //少钱 
+    @Override
+    public void reduceMoney() {
+        String sql = "update t_account set money=money-? where username=?";
+        jdbcTemplate.update(sql,100,"lucy");
+    }
+    //多钱 
+    @Override
+    public void addMoney() {
+        String sql = "update t_account set money=money+? where username=?";
+        jdbcTemplate.update(sql,100,"mary");
     }
 }
 ```
 
-### （4）上面代码，如果正常执行没有问题的，但是如果代码执行过程中出现异常，有问题
+### 模拟方法内部出现异常的情况
 
+![img](https://img-blog.csdnimg.cn/20210306172701820.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70) 
 
-![img](https://img-blog.csdnimg.cn/20210306172701820.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70) 问：上面的问题如何解决呢？ 答：使用事务解决问题
+这种情况下就非常适合使用事务管理的方法，操作方法如下：
 
-**事务操作过程：**
+在 Service 层
 
+![img](https://img-blog.csdnimg.cn/20210306172809125.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
 
-事务添加到 JavaEE 三层结构里面 Service 层（业务逻辑层） ![img](https://img-blog.csdnimg.cn/20210306172809125.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
+具体的 Code 见下方解析。
 
-# 二、事务管理
+# 事务管理
 
-在 Spring 进行事务管理操作，有两种方式：编程式事务管理和声明式事务管理（使用）
+在 Spring 进行事务管理操作，有两种方式：编程式事务管理和声明式事务管理（推荐使用）
 
-## 1、声明式事务管理的实现方式：
+## 声明式事务管理的实现方式：
 
 （1）基于注解方式（使用） （2）基于xml配置方式
 
-## 2、提供一个接口，代表事务管理器，这个接口针对不同的框架提供不同的实现类
+## 提供一个接口，代表事务管理器，这个接口针对不同的框架提供不同的实现类
 
 
 ![img](https://img-blog.csdnimg.cn/20210306180144408.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
 
-## 3、注解式事务管理操作
+## 注解式事务管理操作
 
 （1）在Spring配置文件中，添加事务管理器，并开启事务注解这里需要注意，开启事务注解需要使用名称空间tx
 
@@ -170,7 +148,7 @@ public class UserService {
 
 在 service 类上面添加注解@Transactional，在这个注解里面可以配置事务相关参数 ![img](https://img-blog.csdnimg.cn/2021030618103478.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
 
-# 三、事务的传播行为
+# 事务的传播行为
 
 
 ![img](https://img-blog.csdnimg.cn/20210306181945737.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70) 事务的传播性一般用在事务嵌套的场景，比如一个事务方法里面调用了另外一个事务方法，那么两个方法是各自作为独立的方法提交还是内层的事务合并到外层的事务一起提交，这就是需要事务传播机制的配置来确定怎么样执行。
@@ -191,13 +169,13 @@ PROPAGATION_NESTED该传播机制的特点是可以保存状态保存点，当�
 
 传播规则回答了这样一个问题：一个新的事务应该被启动还是被挂起，或者是一个方法是否应该在事务性上下文中运行。
 
-# 四、事务的隔离级别
+# 事务的隔离级别
 
-## 1、概述
+## 概述
 
 事务的隔离级别定义一个事务可能受其他并发务活动活动影响的程度，可以把事务的隔离级别想象为这个事务对于事物处理数据的自私程度。
 
-## 2、三个读问题
+## 三个读问题
 
 在一个典型的应用程序中，多个事务同时运行，经常会为了完成他们的工作而操作同一个数据。并发虽然是必需的，但是会导致以下问题：
 
@@ -209,13 +187,11 @@ PROPAGATION_NESTED该传播机制的特点是可以保存状态保存点，当�
 
 （3）幻读（Phantom reads） 幻读和不可重复读相似。当一个事务（T1）读取几行记录后，另一个并发事务（T2）插入了一些记录时，幻读就发生了。在后来的查询中，第一个事务（T1）就会发现一些原来没有的额外记录。幻读重点在新增或删除。
 
-## 3、隔离级别
-
-
+## 隔离级别
 
 在理想状态下，事务之间将完全隔离，从而可以防止这些问题发生。然而，完全隔离会影响性能，因为隔离经常涉及到锁定在数据库中的记录（甚至有时是锁表）。完全隔离要求事务相互等待来完成工作，会阻碍并发。因此，可以根据业务场景选择不同的隔离级别。 ![img](https://img-blog.csdnimg.cn/20210306191809640.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)![img](https://img-blog.csdnimg.cn/20210306191909673.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1ODQzNTE0,size_16,color_FFFFFF,t_70)
 
-## 4、timeout：超时时间
+## timeout：超时时间
 
 ```java
 （1）事务需要在一定时间内进行提交，如果不提交进行回滚
@@ -230,17 +206,44 @@ PROPAGATION_NESTED该传播机制的特点是可以保存状态保存点，当�
     （3）设置 readOnly值是 true，设置成 true之后，只能查询
 ```
 
-## 6、rollbackFor：回滚
+## rollbackFor：回滚
+设置出现哪些异常进行事务回滚。
 
-设置出现哪些异常进行事务回滚
+> @Transactional 不指定 rollbackFor 会怎么样？
 
-## 7、noRollbackFor：不回滚
+如果在@Transactional注解中不指定rollbackFor属性，那么默认情况下，当事务执行过程中抛出任何RuntimeException或者Error时，事务都会自动回滚。而当抛出非受检异常（checked exception）时，默认情况下是不回滚的。
+
+举个例子，假设有一个service方法使用了@Transactional注解，但是没有指定rollbackFor属性：
+
+```java
+@Transactional
+public void doSomething() throws MyCheckedException {
+    // execute some database operation
+    throw new MyCheckedException();
+}
+```
+
+在上面的代码中，如果MyCheckedException是一个非受检异常，那么在执行doSomething()方法的过程中，如果发生了这个异常，那么这个方法所在的事务不会回滚，即使异常抛出后方法未正常执行完毕，数据库的操作也不会回滚。如果想要让这个方法所在的事务回滚，需要将MyCheckedException添加到rollbackFor属性中：
+
+```java
+@Transactional(rollbackFor = MyCheckedException.class)
+public void doSomething() throws MyCheckedException {
+    // execute some database operation
+    throw new MyCheckedException();
+}
+```
+
+当MyCheckedException被添加到rollbackFor属性中后，如果在执行doSomething()方法的过程中抛出了这个异常，那么这个方法所在的事务就会回滚。
+
+**需要注意的是**，如果方法内部捕获了异常并且没有重新抛出，事务也不会回滚，因为在事务管理的方法内部捕获异常会使得异常被处理掉，不会再向外抛出，因此事务也不会回滚。如果需要让事务回滚，可以在捕获异常后使用throw语句重新抛出异常。
+
+## noRollbackFor：不回滚
 
 设置出现哪些异常不进行事务回滚
 
-# 五、两种事务管理
+# 两种事务管理
 
-## 1、XML声明式事务管理
+## XML声明式事务管理
 
 （1）配置事务管理器 （2）配置通知 （3）配置切入点和切面
 
@@ -269,7 +272,7 @@ PROPAGATION_NESTED该传播机制的特点是可以保存状态保存点，当�
     </aop:config>
 ```
 
-## 2、完全注解声明式事务管理
+## 完全注解声明式事务管理
 
 （1）创建配置类，用来替代配置文件
 
