@@ -5,9 +5,18 @@ categories: [框架, Spring]
 tags: [设计模式]     # TAG names should always be lowercase
 ---
 
-## Spring IoC的主要功能
+# Spring 容器是什么？
+作为一名 Java 工程师，在工作中少不了接触 Spring，我对它最大的印象就是：只需要在类上面标注几个注解，像 @Component，@Service，@Controller 就再也不用去操心这些 Bean 对象的创建，使用的时候它们就已经创建好了。所以在我眼里 Spring 容器就是一个大的对象工厂。实际上：
 
-1.在实际Spring中，Spring IoC容器做的主要工作分为
+Spring 包含并管理**应用对象的配置和生命周期**，你可以配置你的每个 Bean 对象是如何被创建的，这些 Bean 在创建时可以是一个单独的实例 or 每次都生成一个新的实例，以及它们是如何相互构建和使用的。
+
+在 Spring 容器中，被管理的 Bean 对象并不是直接存在容器中，它会被拆解保存到 Bean 的定义中，然后由 Spring 容器统一进行装配，最终我们就可以使用到实例化后的对象了。
+
+# 目标
+定义一个简单的 Spring 容器，用于**定义、存放和获取 Bean 对象**。
+
+
+在实际Spring中，Spring IoC容器做的主要工作分为
 
 - Bean定义
 - Bean注册，所谓的注册就像DriveManger对数据库驱动进行注册的那样，实际就是将Bean或者与Bean直接关联的信息用容器进行保存，待要使用时就用索引（可以是名称、id、或其他任何能够唯一对应Bean的事务）取出
