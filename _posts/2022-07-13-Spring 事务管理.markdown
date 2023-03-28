@@ -211,7 +211,9 @@ PROPAGATION_NESTED该传播机制的特点是可以保存状态保存点，当�
 
 > @Transactional 不指定 rollbackFor 会怎么样？
 
-如果在@Transactional注解中不指定rollbackFor属性，那么默认情况下，当事务执行过程中抛出任何RuntimeException或者Error时，事务都会自动回滚。而当抛出非受检异常（checked exception）时，默认情况下是不回滚的。
+如果在@Transactional注解中不指定rollbackFor属性，那么默认情况下，当事务执行过程中抛出任何RuntimeException或者Error时，事务都会自动回滚。而当抛出受检异常（checked exception）时，默认情况下是不回滚的。
+
+> Error 和 Exception 都是 Throwable的子类。 RuntimeException 和其子类都属于运行时异常。Error 类和其子类都属于错误类。RuntimeException 及其子类 和 Error类及其子类 属于非受检异常，除此之外的 其他 Throwable 子类属于受检异常。
 
 举个例子，假设有一个service方法使用了@Transactional注解，但是没有指定rollbackFor属性：
 
