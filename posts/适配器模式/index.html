@@ -1,0 +1,517 @@
+<!DOCTYPE html><html lang="zh-CN" ><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="day-prompt" content="天前"><meta name="hour-prompt" content="小时前"><meta name="minute-prompt" content="分钟前"><meta name="justnow-prompt" content="刚刚"><meta name="generator" content="Jekyll v4.2.1" /><meta property="og:title" content="适配器模式" /><meta property="og:locale" content="zh_CN" /><meta name="description" content="适配器模式的原理和实现 适配器模式（Adapter Design Pattern），顾名思义：一种接口通过适配器模式能够当成另一种接口进行使用，它的意义是能够通过多态的方法，使得新增的接口能在不改变上层调用的实现就可以迅速接洽到程序中。" /><meta property="og:description" content="适配器模式的原理和实现 适配器模式（Adapter Design Pattern），顾名思义：一种接口通过适配器模式能够当成另一种接口进行使用，它的意义是能够通过多态的方法，使得新增的接口能在不改变上层调用的实现就可以迅速接洽到程序中。" /><link rel="canonical" href="https://casflawed.github.io/posts/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/" /><meta property="og:url" content="https://casflawed.github.io/posts/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/" /><meta property="og:site_name" content="flameking" /><meta property="og:type" content="article" /><meta property="article:published_time" content="2023-01-09T00:00:00+08:00" /><meta name="twitter:card" content="summary" /><meta property="twitter:title" content="适配器模式" /><meta name="twitter:site" content="@twitter_username" /><meta name="google-site-verification" content="google_meta_tag_verification" /> <script type="application/ld+json"> {"mainEntityOfPage":{"@type":"WebPage","@id":"https://casflawed.github.io/posts/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/"},"description":"适配器模式的原理和实现 适配器模式（Adapter Design Pattern），顾名思义：一种接口通过适配器模式能够当成另一种接口进行使用，它的意义是能够通过多态的方法，使得新增的接口能在不改变上层调用的实现就可以迅速接洽到程序中。","url":"https://casflawed.github.io/posts/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/","@type":"BlogPosting","headline":"适配器模式","dateModified":"2023-02-27T10:40:23+08:00","datePublished":"2023-01-09T00:00:00+08:00","@context":"https://schema.org"}</script><title>适配器模式 | flameking</title><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicons/favicon-16x16.png"><link rel="manifest" href="/assets/img/favicons/site.webmanifest"><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico"><meta name="apple-mobile-web-app-title" content="flameking"><meta name="application-name" content="flameking"><meta name="msapplication-TileColor" content="#da532c"><meta name="msapplication-config" content="/assets/img/favicons/browserconfig.xml"><meta name="theme-color" content="#ffffff"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://fonts.gstatic.com"><link rel="preconnect" href="https://www.google-analytics.com" crossorigin="use-credentials"><link rel="dns-prefetch" href="https://www.google-analytics.com"><link rel="preconnect" href="https://www.googletagmanager.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://www.googletagmanager.com"><link rel="preconnect" href="https://cdn.jsdelivr.net"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/css/all.min.css"><link rel="stylesheet" href="/assets/css/style.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/magnific-popup.min.css"> <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script> <script type="text/javascript"> class ModeToggle { static get MODE_KEY() { return "mode"; } static get DARK_MODE() { return "dark"; } static get LIGHT_MODE() { return "light"; } static get ID() { return "mode-toggle"; } constructor() { if (this.hasMode) { if (this.isDarkMode) { if (!this.isSysDarkPrefer) { this.setDark(); } } else { if (this.isSysDarkPrefer) { this.setLight(); } } } let self = this; /* always follow the system prefers */ this.sysDarkPrefers.addEventListener("change", () => { if (self.hasMode) { if (self.isDarkMode) { if (!self.isSysDarkPrefer) { self.setDark(); } } else { if (self.isSysDarkPrefer) { self.setLight(); } } self.clearMode(); } self.notify(); }); } /* constructor() */ get sysDarkPrefers() { return window.matchMedia("(prefers-color-scheme: dark)"); } get isSysDarkPrefer() { return this.sysDarkPrefers.matches; } get isDarkMode() { return this.mode === ModeToggle.DARK_MODE; } get isLightMode() { return this.mode === ModeToggle.LIGHT_MODE; } get hasMode() { return this.mode != null; } get mode() { return sessionStorage.getItem(ModeToggle.MODE_KEY); } /* get the current mode on screen */ get modeStatus() { if (this.isDarkMode || (!this.hasMode && this.isSysDarkPrefer)) { return ModeToggle.DARK_MODE; } else { return ModeToggle.LIGHT_MODE; } } setDark() { $('html').attr(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE); sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE); } setLight() { $('html').attr(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE); sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE); } clearMode() { $('html').removeAttr(ModeToggle.MODE_KEY); sessionStorage.removeItem(ModeToggle.MODE_KEY); } /* Notify another plugins that the theme mode has changed */ notify() { window.postMessage({ direction: ModeToggle.ID, message: this.modeStatus }, "*"); } } /* ModeToggle */ const toggle = new ModeToggle(); function flipMode() { if (toggle.hasMode) { if (toggle.isSysDarkPrefer) { if (toggle.isLightMode) { toggle.clearMode(); } else { toggle.setLight(); } } else { if (toggle.isDarkMode) { toggle.clearMode(); } else { toggle.setDark(); } } } else { if (toggle.isSysDarkPrefer) { toggle.setLight(); } else { toggle.setDark(); } } toggle.notify(); } /* flipMode() */ </script><body data-spy="scroll" data-target="#toc"><div id="sidebar" class="d-flex flex-column align-items-end" lang="zh-CN"><div class="profile-wrapper text-center"><div id="avatar"> <a href="/" alt="avatar" class="mx-auto"> <img src="https://cdn.jsdelivr.net/gh/Casflawed/img-host@master/blog/202201120016998.jpg" alt="avatar" onerror="this.style.display='none'"> </a></div><div class="site-title mt-3"> <a href="/">flameking</a></div><div class="site-subtitle font-italic">Life is flawed,but we still love life</div></div><ul class="w-100"><li class="nav-item"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home ml-xl-3 mr-xl-3 unloaded"></i> <span>首页</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream ml-xl-3 mr-xl-3 unloaded"></i> <span>分类</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tag ml-xl-3 mr-xl-3 unloaded"></i> <span>标签</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive ml-xl-3 mr-xl-3 unloaded"></i> <span>归档</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info-circle ml-xl-3 mr-xl-3 unloaded"></i> <span>关于</span> </a></ul><div class="sidebar-bottom mt-auto d-flex flex-wrap justify-content-center align-items-center"> <button class="mode-toggle btn" aria-label="Switch Mode"> <i class="fas fa-adjust"></i> </button> <span class="icon-border"></span> <a href="https://github.com/Casflawed" aria-label="github" target="_blank" rel="noopener"> <i class="fab fa-github"></i> </a> <a href=" javascript:location.href = 'mailto:' + ['2711554770','qq.com'].join('@')" aria-label="email" > <i class="fas fa-envelope"></i> </a> <a href="/feed.xml" aria-label="rss" > <i class="fas fa-rss"></i> </a></div></div><div id="topbar-wrapper" class="row justify-content-center topbar-down"><div id="topbar" class="col-11 d-flex h-100 align-items-center justify-content-between"> <span id="breadcrumb"> <span> <a href="/"> 首页 </a> </span> <span>适配器模式</span> </span> <i id="sidebar-trigger" class="fas fa-bars fa-fw"></i><div id="topbar-title"> 文章</div><i id="search-trigger" class="fas fa-search fa-fw"></i> <span id="search-wrapper" class="align-items-center"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off" placeholder="搜索..."> <i class="fa fa-times-circle fa-fw" id="search-cleaner"></i> </span> <span id="search-cancel" >取消</span></div></div><div id="main-wrapper"><div id="main"><div class="row"><div id="core-wrapper" class="col-12 col-lg-11 col-xl-8"><div class="post pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><h1 data-toc-skip>适配器模式</h1><div class="post-meta text-muted"><div> 作者 <em> <a href="https://github.com/Casflawed">flameking</a> </em></div><div class="d-flex"><div> <span> 发表于 <em class="timeago" date="2023-01-09 00:00:00 +0800" data-toggle="tooltip" data-placement="bottom" title="2023-01-09, 00:00 +0800" >01-09</em> </span> <span> 更新于 <em class="timeago" date="2023-02-27 10:40:23 +0800 " data-toggle="tooltip" data-placement="bottom" title="2023-02-27, 10:40 +0800" >02-27</em> </span> <span class="readtime" data-toggle="tooltip" data-placement="bottom" title="4142 字"> <em>23 分钟</em>阅读</span></div></div></div><div class="post-content"><h1 id="适配器模式的原理和实现">适配器模式的原理和实现</h1><p>适配器模式（Adapter Design Pattern），顾名思义：一种接口通过适配器模式能够当成另一种接口进行使用，它的意义是能够通过多态的方法，使得新增的接口能在不改变上层调用的实现就可以迅速接洽到程序中。</p><h1 id="适配器模式的两种实现方式">适配器模式的两种实现方式</h1><p>类适配器使用继承关系来实现，对象适配器使用组合关系来实现</p><p>实现方式如下：其中，ITarget 表示要转化成的接口定义。Adaptee 是一组不兼容 ITarget 接口定义的接口，Adaptor 将 Adaptee 转化成一组符合 ITarget 接口定义的接口。</p><h2 id="类适配器">类适配器<a href="#类适配器" class="anchor"><i class="fas fa-hashtag"></i></a></h2></h2><p>示例 code 如下：</p><div class="language-java highlighter-rouge"><div class="code-header"> <span label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre><td class="rouge-code"><pre><span class="c1">// 类适配器: 基于继承</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">ITarget</span> <span class="o">{</span>
+  <span class="kt">void</span> <span class="nf">f1</span><span class="o">();</span>
+  <span class="kt">void</span> <span class="nf">f2</span><span class="o">();</span>
+  <span class="kt">void</span> <span class="nf">fc</span><span class="o">();</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Adaptee</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fa</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fb</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fc</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Adaptor</span> <span class="kd">extends</span> <span class="nc">Adaptee</span> <span class="kd">implements</span> <span class="nc">ITarget</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">f1</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">fa</span><span class="o">();</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">f2</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">//...重新实现f2()...</span>
+  <span class="o">}</span>
+  
+  <span class="c1">// 这里fc()不需要实现，直接继承自Adaptee，这是跟对象适配器最大的不同点</span>
+<span class="o">}</span>
+</pre></table></code></div></div><h2 id="对象适配器">对象适配器<a href="#对象适配器" class="anchor"><i class="fas fa-hashtag"></i></a></h2></h2><p>示例 code 如下：</p><div class="language-java highlighter-rouge"><div class="code-header"> <span label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+</pre><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">ITarget</span> <span class="o">{</span>
+  <span class="kt">void</span> <span class="nf">f1</span><span class="o">();</span>
+  <span class="kt">void</span> <span class="nf">f2</span><span class="o">();</span>
+  <span class="kt">void</span> <span class="nf">fc</span><span class="o">();</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Adaptee</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fa</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fb</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fc</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Adaptor</span> <span class="kd">implements</span> <span class="nc">ITarget</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="nc">Adaptee</span> <span class="n">adaptee</span><span class="o">;</span>
+  <span class="kd">public</span> <span class="nf">Adaptor</span><span class="o">(</span><span class="nc">Adaptee</span> <span class="n">adaptee</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">adaptee</span> <span class="o">=</span> <span class="n">adaptee</span><span class="o">;</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">f1</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">adaptee</span><span class="o">.</span><span class="na">fa</span><span class="o">();</span> <span class="c1">//委托给Adaptee</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">f2</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">//...重新实现f2()...</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fc</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">adaptee</span><span class="o">.</span><span class="na">fc</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></table></code></div></div><h2 id="两种方式各在什么时候使用">两种方式各在什么时候使用<a href="#两种方式各在什么时候使用" class="anchor"><i class="fas fa-hashtag"></i></a></h2></h2><p>标准主要有两个：一个是Adaptee接口的个数，另一个是Adaptee和ITarget的契合程度。</p><ol><li>如果Adaptee接口并不多，那两种实现方式都可以。<li>如果Adaptee接口很多，而且 Adaptee 和 ITarget 接口定义大部分相同，推荐使用类适配器，因为 Adaptor 复用父类 Adaptee 的接口，比起对象适配器的实现方式，Adaptor 的代码量要少一些。<li>如果 Adaptee 接口很多，而且 Adaptee 和 ITarget 接口定义大部分不同，推荐使用对象适配器，因为组合结构相对于继承更加灵活</ol><h1 id="适配器应用场景">适配器应用场景</h1><p>一般来说，适配器模式可以看作一种“补偿模式”，用来补救设计上的缺陷。应用这种模式算是“无奈之举”。如果在设计初期，我们就能协调规避接口不兼容的问题，那这种模式就没有应用的机会了。</p><p>适配器模式的应用场景是 “接口不兼容”，实际开发中在下面这些情况下会出现接口不兼容：</p><p><strong>封装有缺陷的接口设计</strong></p><p>假设我们依赖的外部系统在接口设计方面有缺陷（比如包含大量静态方法），引入之后会影响到我们自身代码的可测试性。为了隔离设计上的缺陷，我们希望对外部系统提供的接口进行二次封装，抽象出更好的接口设计，这个时候就可以使用适配器模式了。具体 code 如下：</p><div class="language-java highlighter-rouge"><div class="code-header"> <span label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+</pre><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CD</span> <span class="o">{</span> <span class="c1">//这个类来自外部sdk，我们无权修改它的代码</span>
+  <span class="c1">//...</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">staticFunction1</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">uglyNamingFunction2</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">tooManyParamsFunction3</span><span class="o">(</span><span class="kt">int</span> <span class="n">paramA</span><span class="o">,</span> <span class="kt">int</span> <span class="n">paramB</span><span class="o">,</span> <span class="o">...)</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+  
+   <span class="kd">public</span> <span class="kt">void</span> <span class="nf">lowPerformanceFunction4</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// 使用适配器模式进行重构</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">ITarget</span> <span class="o">{</span>
+  <span class="kt">void</span> <span class="nf">function1</span><span class="o">();</span>
+  <span class="kt">void</span> <span class="nf">function2</span><span class="o">();</span>
+  <span class="kt">void</span> <span class="nf">fucntion3</span><span class="o">(</span><span class="nc">ParamsWrapperDefinition</span> <span class="n">paramsWrapper</span><span class="o">);</span>
+  <span class="kt">void</span> <span class="nf">function4</span><span class="o">();</span>
+  <span class="c1">//...</span>
+<span class="o">}</span>
+<span class="c1">// 注意：适配器类的命名不一定非得末尾带Adaptor</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CDAdaptor</span> <span class="kd">extends</span> <span class="no">CD</span> <span class="kd">implements</span> <span class="nc">ITarget</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">function1</span><span class="o">()</span> <span class="o">{</span>
+    
+    <span class="cm">/**
+     * 注意这里使用了 super 引用父类的静态方法，super 的作用如下：
+     * 1.调用父类的方法
+     * 2.调用父类的构造器
+     * 注意：与 this 不同，super 不是一个引用变量，不能将它赋给另一个对象变量，它只是一个指示编译器调用超类方法的特殊关键词
+     */</span>
+     <span class="kd">super</span><span class="o">.</span><span class="na">staticFunction1</span><span class="o">();</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">function2</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">uglyNamingFucntion2</span><span class="o">();</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">function3</span><span class="o">(</span><span class="nc">ParamsWrapperDefinition</span> <span class="n">paramsWrapper</span><span class="o">)</span> <span class="o">{</span>
+     <span class="kd">super</span><span class="o">.</span><span class="na">tooManyParamsFunction3</span><span class="o">(</span><span class="n">paramsWrapper</span><span class="o">.</span><span class="na">getParamA</span><span class="o">(),</span> <span class="o">...);</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">function4</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">//...reimplement it...</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p><strong>统一多个类的接口设计</strong></p><p>某个功能的实现依赖多个外部系统（或者说类）。通过适配器模式，将它们的接口适配为统一的接口定义，然后我们就可以使用多态的特性来复用代码逻辑。我们的系统要对用户输入的文本内容做敏感词过滤，为了提高过滤的召回率（指能尽可能多的过滤掉敏感词），我们引入了多款第三方敏感词过滤系统，依次对用户输入的内容进行过滤。但是，每个系统提供的过滤接口都是不同的。这就意味着我们没法复用一套逻辑来调用各个系统。这个时候，我们就可以使用适配器模式，将所有系统的接口适配为统一的接口定义，这样我们可以复用调用敏感词过滤的代码。code 如下：</p><div class="language-java highlighter-rouge"><div class="code-header"> <span label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+</pre><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ASensitiveWordsFilter</span> <span class="o">{</span> <span class="c1">// A敏感词过滤系统提供的接口</span>
+  <span class="c1">//text是原始文本，函数输出用***替换敏感词之后的文本</span>
+  <span class="kd">public</span> <span class="nc">String</span> <span class="nf">filterSexyWords</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// ...</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="nc">String</span> <span class="nf">filterPoliticalWords</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// ...</span>
+  <span class="o">}</span> 
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BSensitiveWordsFilter</span>  <span class="o">{</span> <span class="c1">// B敏感词过滤系统提供的接口</span>
+  <span class="kd">public</span> <span class="nc">String</span> <span class="nf">filter</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">//...</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CSensitiveWordsFilter</span> <span class="o">{</span> <span class="c1">// C敏感词过滤系统提供的接口</span>
+  <span class="kd">public</span> <span class="nc">String</span> <span class="nf">filter</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">,</span> <span class="nc">String</span> <span class="n">mask</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">//...</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// 未使用适配器模式之前的代码：代码的可测试性、扩展性不好</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">RiskManagement</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="nc">ASensitiveWordsFilter</span> <span class="n">aFilter</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ASensitiveWordsFilter</span><span class="o">();</span>
+  <span class="kd">private</span> <span class="nc">BSensitiveWordsFilter</span> <span class="n">bFilter</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">BSensitiveWordsFilter</span><span class="o">();</span>
+  <span class="kd">private</span> <span class="nc">CSensitiveWordsFilter</span> <span class="n">cFilter</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CSensitiveWordsFilter</span><span class="o">();</span>
+
+  <span class="kd">public</span> <span class="nc">String</span> <span class="nf">filterSensitiveWords</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">String</span> <span class="n">maskedText</span> <span class="o">=</span> <span class="n">aFilter</span><span class="o">.</span><span class="na">filterSexyWords</span><span class="o">(</span><span class="n">text</span><span class="o">);</span>
+    <span class="n">maskedText</span> <span class="o">=</span> <span class="n">aFilter</span><span class="o">.</span><span class="na">filterPoliticalWords</span><span class="o">(</span><span class="n">maskedText</span><span class="o">);</span>
+    <span class="n">maskedText</span> <span class="o">=</span> <span class="n">bFilter</span><span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">maskedText</span><span class="o">);</span>
+    <span class="n">maskedText</span> <span class="o">=</span> <span class="n">cFilter</span><span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">maskedText</span><span class="o">,</span> <span class="s">"***"</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">maskedText</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// 使用适配器模式进行改造</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">ISensitiveWordsFilter</span> <span class="o">{</span> <span class="c1">// 统一接口定义</span>
+  <span class="nc">String</span> <span class="nf">filter</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ASensitiveWordsFilterAdaptor</span> <span class="kd">implements</span> <span class="nc">ISensitiveWordsFilter</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="nc">ASensitiveWordsFilter</span> <span class="n">aFilter</span><span class="o">;</span>
+  <span class="kd">public</span> <span class="nc">String</span> <span class="nf">filter</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">String</span> <span class="n">maskedText</span> <span class="o">=</span> <span class="n">aFilter</span><span class="o">.</span><span class="na">filterSexyWords</span><span class="o">(</span><span class="n">text</span><span class="o">);</span>
+    <span class="n">maskedText</span> <span class="o">=</span> <span class="n">aFilter</span><span class="o">.</span><span class="na">filterPoliticalWords</span><span class="o">(</span><span class="n">maskedText</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">maskedText</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">//...省略BSensitiveWordsFilterAdaptor、CSensitiveWordsFilterAdaptor...</span>
+<span class="c1">// 扩展性更好，更加符合开闭原则，如果添加一个新的敏感词过滤系统，</span>
+<span class="c1">// 这个类完全不需要改动；而且基于接口而非实现编程，代码的可测试性更好。</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">RiskManagement</span> <span class="o">{</span> 
+  <span class="kd">private</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">ISensitiveWordsFilter</span><span class="o">&gt;</span> <span class="n">filters</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addSensitiveWordsFilter</span><span class="o">(</span><span class="nc">ISensitiveWordsFilter</span> <span class="n">filter</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">filters</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">filter</span><span class="o">);</span>
+  <span class="o">}</span>
+  
+  <span class="kd">public</span> <span class="nc">String</span> <span class="nf">filterSensitiveWords</span><span class="o">(</span><span class="nc">String</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">String</span> <span class="n">maskedText</span> <span class="o">=</span> <span class="n">text</span><span class="o">;</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">ISensitiveWordsFilter</span> <span class="n">filter</span> <span class="o">:</span> <span class="n">filters</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">maskedText</span> <span class="o">=</span> <span class="n">filter</span><span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">maskedText</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">maskedText</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p><strong>替换依赖的外部系统</strong></p><p>当我们把项目中依赖的一个外部系统替换为另一个外部系统的时候，利用适配器模式，可以减少对代码的改动。code 如下：</p><div class="language-java highlighter-rouge"><div class="code-header"> <span label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+</pre><td class="rouge-code"><pre><span class="c1">// 外部系统A</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">IA</span> <span class="o">{</span>
+  <span class="c1">//...</span>
+  <span class="kt">void</span> <span class="nf">fa</span><span class="o">();</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span> <span class="kd">implements</span> <span class="no">IA</span> <span class="o">{</span>
+  <span class="c1">//...</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fa</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/**...*/</span> <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// 在我们的项目中，外部系统A的使用示例</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Demo</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="no">IA</span> <span class="n">a</span><span class="o">;</span>
+  <span class="kd">public</span> <span class="nf">Demo</span><span class="o">(</span><span class="no">IA</span> <span class="n">a</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">;</span>
+  <span class="o">}</span>
+  <span class="c1">//...</span>
+<span class="o">}</span>
+<span class="nc">Demo</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Demo</span><span class="o">(</span><span class="k">new</span> <span class="no">A</span><span class="o">());</span>
+<span class="c1">// 将外部系统A替换成外部系统B</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BAdaptor</span> <span class="n">implemnts</span> <span class="no">IA</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="no">B</span> <span class="n">b</span><span class="o">;</span>
+  <span class="kd">public</span> <span class="nf">BAdaptor</span><span class="o">(</span><span class="no">B</span> <span class="n">b</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">b</span><span class="o">=</span> <span class="n">b</span><span class="o">;</span>
+  <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">fa</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">//...</span>
+    <span class="n">b</span><span class="o">.</span><span class="na">fb</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// 借助BAdaptor，Demo的代码中，调用IA接口的地方都无需改动，</span>
+<span class="c1">// 只需要将BAdaptor如下注入到Demo即可。</span>
+<span class="nc">Demo</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Demo</span><span class="o">(</span><span class="k">new</span> <span class="nc">BAdaptor</span><span class="o">(</span><span class="k">new</span> <span class="no">B</span><span class="o">()))</span>
+</pre></table></code></div></div><p><strong>兼容老版本接口</strong></p><p>在做版本升级的时候，对于一些要废弃的接口，我们不直接将其删除，而是暂时保留，并且标注为deprecated，并将内部实现逻辑委托为新的接口实现。这样做的好处是，让使用它的项目有个过渡期，而不是强制进行代码修改。这也可以粗略地看作适配器模式的一个应用场景。比如在 JDK1.0 中，包含一个遍历集合容器的类Enumeration。JDK2.0对这个类进行了重构，将它改名为Iterator类，并且对它的代码实现做了优化。但是考虑到如果将Enumeration直接从 JDK2.0 中删除，那使用JDK1.0的项目如果切换到JDK2.0，代码就会编译不通过。为了避免这种情况的发生，我们必须把项目中所有使用到Enumeration的地方，都修改为使用Iterator才行</p><p>单独一个项目做Enumeration到Iterator的替换，勉强还能接受。但是，使用Java开发的项目太多了，一次JDK的升级，导致所有的项目不做代码修改就会编译报错，这显然是不合理的。这就是我们经常所说的不兼容升级。为了做到兼容使用低版本JDK的老代码，我们可以暂时保留Enumeration类，并将其实现替换为直接调用Itertor。code 如下：</p><div class="language-java highlighter-rouge"><div class="code-header"> <span label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Collections</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="nc">Emueration</span> <span class="nf">emumeration</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Collection</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">Enumeration</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nc">Iterator</span> <span class="n">i</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">iterator</span><span class="o">();</span>
+      
+      <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasMoreElments</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="na">hashNext</span><span class="o">();</span>
+      <span class="o">}</span>
+      
+      <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">nextElement</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="na">next</span><span class="o">():</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>前面我们讲到，适配器模式主要用于接口的适配，实际上，它还可以用在不同格式的数据之间的适配。比如，把从不同征信系统拉取的不同格式的征信数据，统一为相同的格式，以方便存储和使用。再比如，Java中的Arrays.asList()也可以看作一种数据适配器，将数组类型的数据转化为集合容器类型。</p><div class="language-java highlighter-rouge"><div class="code-header"> <span label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre><td class="rouge-code"><pre><span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">stooges</span> <span class="o">=</span> <span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="s">"Larry"</span><span class="o">,</span> <span class="s">"Moe"</span><span class="o">,</span> <span class="s">"Curly"</span><span class="o">);</span>
+</pre></table></code></div></div><p><strong>剖析适配器模式在 Java 日志中的应用</strong></p><p>java中有很多日志框架，在项目开发中，我们常常用它们来打印日志信息。其中，比较常用的有log4j、logback，以及JDK提供的JUL(java.util.logging)和Apache的JCL(JakartaCommons Logging)等。</p><p>大部分日志框架都提供了相似的功能，比如按照不同级别（debug、info、warn、erro……）打印日志等，但它们却并没有实现统一的接口。这主要可能是历史的原因，它不像JDBC那样，一开始就制定了数据库操作的接口规范。</p><p>比如，项目中用到的某个组件使用log4j来打印日志，而我们项目本身使用的是logback。将组件引入到项目之后，我们的项目就相当于有了两套日志打印框架。每种日志框架都有自己特有的配置方式。所以，我们要针对每种日志框架编写不同的配置文件（比如，日志存储的文件地址、打印日志的格式）。如果引入多个组件，每个组件使用的日志框架都不一样，那日志本身的管理工作就变得非常复杂。所以，为了解决这个问题，我们需要统一日志打印框架。</p><p>于是 Slf4j 横空出世，它相当于JDBC规范，提供了一套打印日志的统一接口规范。不过，它只定义了接口，并没有提供具体的实现，需要配合其他日志框架（log4j、logback……）来使用。</p><p>不仅如此，Slf4j的出现晚于JUL、JCL、log4j等日志框架，所以，这些日志框架也不可能牺牲掉版本兼容性，将接口改造成符合Slf4j接口规范。Slf4j也事先考虑到了这个问题，所以，它不仅仅提供了统一的接口定义，还提供了针对不同日志框架的适配器。对不同日志框架的接口进行二次封装，适配成统一的Slf4j接口定义。code 如下：</p><div class="language-java highlighter-rouge"><div class="code-header"> <span label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+</pre><td class="rouge-code"><pre><span class="c1">// slf4j统一的接口定义</span>
+<span class="kn">package</span> <span class="nn">org.slf4j</span><span class="o">;</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Logger</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isTraceEnabled</span><span class="o">();</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trace</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">);</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trace</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg</span><span class="o">);</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trace</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg1</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg2</span><span class="o">);</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trace</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span><span class="o">[]</span> <span class="n">argArray</span><span class="o">);</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trace</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">,</span> <span class="nc">Throwable</span> <span class="n">t</span><span class="o">);</span>
+  <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isDebugEnabled</span><span class="o">();</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">);</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg</span><span class="o">);</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg1</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg2</span><span class="o">)</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span><span class="o">[]</span> <span class="n">argArray</span><span class="o">)</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">,</span> <span class="nc">Throwable</span> <span class="n">t</span><span class="o">);</span>
+  <span class="c1">//...省略info、warn、error等一堆接口</span>
+<span class="o">}</span>
+<span class="c1">// log4j日志框架的适配器</span>
+<span class="c1">// Log4jLoggerAdapter实现了LocationAwareLogger接口，</span>
+<span class="c1">// 其中LocationAwareLogger继承自Logger接口，</span>
+<span class="c1">// 也就相当于Log4jLoggerAdapter实现了Logger接口。</span>
+<span class="kn">package</span> <span class="nn">org.slf4j.impl</span><span class="o">;</span>
+<span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">Log4jLoggerAdapter</span> <span class="kd">extends</span> <span class="nc">MarkerIgnoringBase</span>
+  <span class="kd">implements</span> <span class="nc">LocationAwareLogger</span><span class="o">,</span> <span class="nc">Serializable</span> <span class="o">{</span>
+  <span class="kd">final</span> <span class="kd">transient</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">log4j</span><span class="o">.</span><span class="na">Logger</span> <span class="n">logger</span><span class="o">;</span> <span class="c1">// log4j</span>
+  <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isDebugEnabled</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">logger</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">();</span>
+  <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">logger</span><span class="o">.</span><span class="na">log</span><span class="o">(</span><span class="no">FQCN</span><span class="o">,</span> <span class="nc">Level</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">,</span> <span class="n">msg</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+  <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">logger</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">())</span> <span class="o">{</span>
+      <span class="nc">FormattingTuple</span> <span class="n">ft</span> <span class="o">=</span> <span class="nc">MessageFormatter</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="n">format</span><span class="o">,</span> <span class="n">arg</span><span class="o">);</span>
+      <span class="n">logger</span><span class="o">.</span><span class="na">log</span><span class="o">(</span><span class="no">FQCN</span><span class="o">,</span> <span class="nc">Level</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">,</span> <span class="n">ft</span><span class="o">.</span><span class="na">getMessage</span><span class="o">(),</span> <span class="n">ft</span><span class="o">.</span><span class="na">getThrowable</span><span class="o">());</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg1</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">arg2</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">logger</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">())</span> <span class="o">{</span>
+      <span class="nc">FormattingTuple</span> <span class="n">ft</span> <span class="o">=</span> <span class="nc">MessageFormatter</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="n">format</span><span class="o">,</span> <span class="n">arg1</span><span class="o">,</span> <span class="n">arg2</span><span class="o">);</span>
+      <span class="n">logger</span><span class="o">.</span><span class="na">log</span><span class="o">(</span><span class="no">FQCN</span><span class="o">,</span> <span class="nc">Level</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">,</span> <span class="n">ft</span><span class="o">.</span><span class="na">getMessage</span><span class="o">(),</span> <span class="n">ft</span><span class="o">.</span><span class="na">getThrowable</span><span class="o">());</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">format</span><span class="o">,</span> <span class="nc">Object</span><span class="o">[]</span> <span class="n">argArray</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">logger</span><span class="o">.</span><span class="na">isDebugEnabled</span><span class="o">())</span> <span class="o">{</span>
+      <span class="nc">FormattingTuple</span> <span class="n">ft</span> <span class="o">=</span> <span class="nc">MessageFormatter</span><span class="o">.</span><span class="na">arrayFormat</span><span class="o">(</span><span class="n">format</span><span class="o">,</span> <span class="n">argArray</span><span class="o">);</span>
+      <span class="n">logger</span><span class="o">.</span><span class="na">log</span><span class="o">(</span><span class="no">FQCN</span><span class="o">,</span> <span class="nc">Level</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">,</span> <span class="n">ft</span><span class="o">.</span><span class="na">getMessage</span><span class="o">(),</span> <span class="n">ft</span><span class="o">.</span><span class="na">getThrowable</span><span class="o">());</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">debug</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">,</span> <span class="nc">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">logger</span><span class="o">.</span><span class="na">log</span><span class="o">(</span><span class="no">FQCN</span><span class="o">,</span> <span class="nc">Level</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">,</span> <span class="n">msg</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="c1">//...省略一堆接口的实现...</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>所以，在开发业务系统或者开发框架、组件的时候，我们统一使用Slf4j提供的接口来编写打印日志的代码，具体使用哪种日志框架实现（log4j、logback……），是可以动态地指定的（使用Java的SPI技术），只需要将相应的SDK导入到项目中即可。不过，你可能会说，如果一些老的项目没有使用Slf4j，而是直接使用比如JCL来打印日志，那如果想要替换成其他日志框架，比如log4j，该怎么办呢？实际上，Slf4j不仅仅提供了从其他日志框架到Slf4j的适配器，还提供了反向适配器，也就是从Slf4j到其他日志框架的适配。我们可以先将JCL切换为Slf4j，然后再将Slf4j切换为log4j。经过两次适配器的转换，我们就能成功将JCL切换为了log4j。</p><h1 id="代理桥接装饰器适配器4种设计模式的区别">代理、桥接、装饰器、适配器4种设计模式的区别</h1><p>代理、桥接、装饰器、适配器，这4种模式是比较常用的结构型设计模式。它们的代码结构非常相似。笼统来说，它们都可以称为Wrapper模式，也就是通过Wrapper类二次封装原始类。</p><p>尽管代码结构相似，但这4种设计模式的用意完全不同，也就是说要解决的问题、应用场景不同，这也是它们的主要区别。</p><p><strong>代理模式</strong></p><p>代理模式在不改变原始类接口的条件下，为原始类定义一个代理类，主要目的是控制访问，而非加强功能，这是它跟装饰器模式最大的不同。</p><p><strong>桥接模式</strong></p><p>桥接模式的目的是将接口部分和实现部分分离，从而让它们可以较为容易、也相对独立地加以改变。</p><p><strong>装饰器模式</strong></p><p>装饰者模式在不改变原始类接口的情况下，对原始类功能进行增强，并且支持多个装饰器的嵌套使用。</p><p><strong>适配器模式</strong></p><p>适配器模式是一种事后的补救策略。适配器提供跟原始类不同的接口，而代理模式、装饰器模式提供的都是跟原始类相同的接口。</p></div><div class="post-tail-wrapper text-muted"><div class="post-meta mb-3"> <i class="far fa-folder-open fa-fw mr-1"></i> <a href='/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/'>设计模式</a></div><div class="post-tail-bottom d-flex justify-content-between align-items-center mt-3 pt-5 pb-2"><div class="license-wrapper"> 本文由作者按照 <a href="https://creativecommons.org/licenses/by/4.0/"> CC BY 4.0 </a> 进行授权</div><div class="share-wrapper"> <span class="share-label text-muted mr-1">分享</span> <span class="share-icons"> <a href="https://twitter.com/intent/tweet?text=适配器模式 - flameking&url=https://casflawed.github.io/posts/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/" data-toggle="tooltip" data-placement="top" title="Twitter" target="_blank" rel="noopener" aria-label="Twitter"> <i class="fa-fw fab fa-twitter"></i> </a> <a href="https://www.facebook.com/sharer/sharer.php?title=适配器模式 - flameking&u=https://casflawed.github.io/posts/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/" data-toggle="tooltip" data-placement="top" title="Facebook" target="_blank" rel="noopener" aria-label="Facebook"> <i class="fa-fw fab fa-facebook-square"></i> </a> <a href="https://telegram.me/share?text=适配器模式 - flameking&url=https://casflawed.github.io/posts/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/" data-toggle="tooltip" data-placement="top" title="Telegram" target="_blank" rel="noopener" aria-label="Telegram"> <i class="fa-fw fab fa-telegram"></i> </a> <i id="copy-link" class="fa-fw fas fa-link small" data-toggle="tooltip" data-placement="top" title="分享链接" title-succeed="链接已复制！"> </i> </span></div></div></div></div></div><div id="panel-wrapper" class="col-xl-3 pl-2 text-muted topbar-down"><div class="access"><div id="access-lastmod" class="post"><div class="panel-heading">最近更新</div><ul class="post-content pl-0 pb-1 ml-1 mt-2"><li><a href="/posts/%E7%A7%AF%E5%88%86%E4%BD%93%E7%B3%BB%E8%AE%BE%E8%AE%A1/">积分体系设计</a><li><a href="/posts/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E4%BB%98%E5%8A%9F%E8%83%BD%E5%AE%9E%E8%B7%B5/">支付宝支付功能实践</a><li><a href="/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/">分布式定时任务功能实现</a><li><a href="/posts/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">代理模式</a><li><a href="/posts/Spring-%E4%BA%8B%E5%8A%A1%E7%AE%A1%E7%90%86/">Spring 事务管理</a></ul></div><div id="access-tags"><div class="panel-heading">热门标签</div><div class="d-flex flex-wrap mt-3 mb-1 mr-3"> <a class="post-tag" href="/tags/%E6%B3%A8%E8%A7%A3/">注解</a> <a class="post-tag" href="/tags/%E5%8F%8D%E5%B0%84/">反射</a> <a class="post-tag" href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a> <a class="post-tag" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a> <a class="post-tag" href="/tags/%E5%B0%81%E8%A3%85/">封装</a> <a class="post-tag" href="/tags/cglib/">CGLIB</a> <a class="post-tag" href="/tags/lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F/">lambda表达式</a> <a class="post-tag" href="/tags/litepal/">litepal</a> <a class="post-tag" href="/tags/springboot/">SpringBoot</a> <a class="post-tag" href="/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/">二分查找</a></div></div></div><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script><div id="toc-wrapper" class="pl-0 pr-4 mb-5"><div class="panel-heading pl-3 pt-2 mb-2">文章内容</div><nav id="toc" data-toggle="toc"></nav></div></div></div><div class="row"><div class="col-12 col-lg-11 col-xl-8"><div id="tail-wrapper" class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><div id="related-posts" class="mt-5 mb-2 mb-sm-4"><h3 class="pt-2 mt-1 mb-4 ml-1" data-toc-skip>相关文章</h3><div class="card-deck mb-4"><div class="card"> <a href="/posts/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%BE%8E%E5%AF%BC%E8%AF%BB%E5%92%8C%E7%9F%A5%E8%AF%86%E6%A1%86%E5%9B%BE/"><div class="card-body"> <em class="timeago small" date="2022-11-08 00:00:00 +0800" >2022-11-08</em><h3 class="pt-0 mt-1 mb-3" data-toc-skip>设计模式之美导读和知识框图</h3><div class="text-muted small"><p> 1. 导读 1.1. 为什么要学设计模式 应对面试 提高代码质量 提高复杂系统的设计和开发能力 便于理解开源项目（优秀的开源项目往往大量用到了设计模式） 提升软实力 1.2. 如何评价代码质量 评价指标 可维护性 可读性 可扩展性 可复用性 可测试性 ...</p></div></div></a></div><div class="card"> <a href="/posts/%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/"><div class="card-body"> <em class="timeago small" date="2022-11-13 00:00:00 +0800" >2022-11-13</em><h3 class="pt-0 mt-1 mb-3" data-toc-skip>设计思想-面向对象</h3><div class="text-muted small"><p> 1. 面向对象编程和面向对象编程语言 1.1. 定义 面向对象编程：以类或对象作为组织代码的基本单元，并将封装、抽象、继承、多态四个特性，作为代码设计和实现的基石 。 面向对象编程语言：支持类或对象的语法机制，并有现成的语法机制，能方便地实现面向对象编程四大特性（封装、抽象、继承、多态）的编程语言。 1.2. 面向对象分析、设计和实现 软件工程 ...</p></div></div></a></div><div class="card"> <a href="/posts/%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B%E4%B8%8E%E9%9D%A2%E5%90%91%E8%BF%87%E7%A8%8B%E7%BC%96%E7%A8%8B/"><div class="card-body"> <em class="timeago small" date="2022-11-13 00:00:00 +0800" >2022-11-13</em><h3 class="pt-0 mt-1 mb-3" data-toc-skip>面向对象编程与面向过程编程</h3><div class="text-muted small"><p> 1. 面向过程编程和面向过程编程语言 1.1. 定义 面向过程编程：以过程（可以理解为方法、函数、操作）作为组织代码的基本单元，以数据（可以理解为成员变量、属性）与方法相分离为最主要的特点。面向过程风格是一种流程化的编程风格，通过拼接一组顺序执行的方法来操作数据完成一项功能。 面向过程编程语言：不支持类和对象两个语法概念，不支持丰富的面向对象编程特性（比如继承、多态、封装），仅支持面向...</p></div></div></a></div></div></div><div class="post-navigation d-flex justify-content-between"> <a href="/posts/%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F/" class="btn btn-outline-primary" prompt="上一篇"><p>备忘录模式</p></a> <a href="/posts/%E5%AF%BC%E5%85%A5%E5%AF%BC%E5%87%BA%E6%B3%A8%E8%A7%A3%E5%BC%8F%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" class="btn btn-outline-primary" prompt="下一篇"><p>导入导出注解式解决方案</p></a></div></div></div></div><footer class="d-flex w-100 justify-content-center"><div class="d-flex justify-content-between align-items-center text-muted"><div class="footer-left"><p class="mb-0"> © 2023 <a href="https://github.com/Casflawed">flameking</a>. <span data-toggle="tooltip" data-placement="top" title="除非另有说明，本网站上的博客文章均由作者按照知识共享署名 4.0 国际 (CC BY 4.0) 许可协议进行授权。">保留部分权利。</span></p></div><div class="footer-right"><p class="mb-0"> 本站由 <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a> 生成，采用 <a href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener">Chirpy</a> 主题。</p></div></div></footer></div><div id="search-result-wrapper" class="d-flex justify-content-center unloaded"><div class="col-12 col-sm-11 post-content"><div id="search-hints"><div id="access-tags"><div class="panel-heading">热门标签</div><div class="d-flex flex-wrap mt-3 mb-1 mr-3"> <a class="post-tag" href="/tags/%E6%B3%A8%E8%A7%A3/">注解</a> <a class="post-tag" href="/tags/%E5%8F%8D%E5%B0%84/">反射</a> <a class="post-tag" href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a> <a class="post-tag" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a> <a class="post-tag" href="/tags/%E5%B0%81%E8%A3%85/">封装</a> <a class="post-tag" href="/tags/cglib/">CGLIB</a> <a class="post-tag" href="/tags/lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F/">lambda表达式</a> <a class="post-tag" href="/tags/litepal/">litepal</a> <a class="post-tag" href="/tags/springboot/">SpringBoot</a> <a class="post-tag" href="/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/">二分查找</a></div></div></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><div id="mask"></div><a id="back-to-top" href="#" aria-label="back-to-top" class="btn btn-lg btn-box-shadow" role="button"> <i class="fas fa-angle-up"></i> </a> <script src="https://cdn.jsdelivr.net/npm/simple-jekyll-search@1.10.0/dest/simple-jekyll-search.min.js"></script> <script> SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0"> <a href="{url}">{title}</a><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div><p>{snippet}</p></div>', noResultsText: '<p class="mt-5">搜索结果为空</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); </script> <script src="https://cdn.jsdelivr.net/combine/npm/lozad/dist/lozad.min.js,npm/magnific-popup@1/dist/jquery.magnific-popup.min.js,npm/clipboard@2/dist/clipboard.min.js"></script> <script defer src="/assets/js/dist/post.min.js"></script> <script src="https://cdn.jsdelivr.net/combine/npm/popper.js@1.16.1,npm/bootstrap@4/dist/js/bootstrap.min.js"></script> <script defer src="/app.js"></script> <script defer src="https://www.googletagmanager.com/gtag/js?id="></script> <script> document.addEventListener("DOMContentLoaded", function(event) { window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', ''); }); </script>
